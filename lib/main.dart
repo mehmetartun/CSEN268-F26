@@ -1,7 +1,9 @@
+import 'pages/list_view_page.dart';
+import 'theme/theme_util.dart';
+
 import 'package:flutter/material.dart';
 
-import 'widgets/counter_widget.dart';
-import 'widgets/labeled_text_widget.dart';
+import 'theme/theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,63 +15,19 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    MaterialTheme materialTheme = MaterialTheme(
+      createTextTheme(context, 'Roboto', 'Playfair Display'),
+    );
+
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'CSEN268 Demo Home Page'),
-    );
-  }
-}
+      // theme: ThemeData(
+      //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      // ),
+      theme: materialTheme.light(),
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    print("Rebuilding.... $_counter");
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            SizedBox(height: 20),
-            CounterWidget(),
-            SizedBox(height: 20),
-            LabeledTextWidget(label: "Label", text: "Text Text Text"),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      // home: const MyHomePage(title: 'CSEN268 Demo Home Page'),
+      home: const ListViewPage(),
     );
   }
 }
