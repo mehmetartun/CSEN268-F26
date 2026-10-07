@@ -1,4 +1,8 @@
+import 'package:csen268f26/pages/column_page.dart';
+import 'package:csen268f26/pages/my_home_page.dart';
+
 import 'pages/list_view_page.dart';
+import 'pages/page_with_double_scrollview.dart';
 import 'theme/theme_util.dart';
 
 import 'package:flutter/material.dart';
@@ -27,7 +31,9 @@ class MyApp extends StatelessWidget {
       theme: materialTheme.light(),
 
       // home: const MyHomePage(title: 'CSEN268 Demo Home Page'),
-      home: const ListViewPage(),
+      // home: const MyHomePage(title: 'My Home'),
+      // home: const PageWithDoubleScrollview(),
+      home: const ColumnPage(),
     );
   }
 }
