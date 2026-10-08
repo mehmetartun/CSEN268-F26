@@ -1,88 +1,44 @@
-# Lecture 7 - 03
+# Lecture 8 - 01
 
-## Error Handling
+Here we implement the `BLoC` method of managing states.
 
-We look at error handling in the authentication flow by throwing an **Exception** in the authentication repository:
+## MultiBlocProvider
+
+At the top of our code, before `MaterialApp` we place a `MultiBlocProvider` which will act as the `AuthenticationBloc`. 
+
 ```dart
-class FirebaseAuthenticationRepository extends AuthenticationRepository {
-  ...
-  Future<User> signIn({required String email, required String password}) async {
-    ...
-    if (password == "TopSecret") {
-      return User.createMockUser();
-    } else {
-      throw Exception("Wrong password");
-    }
-  }
-}
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(
+          create: (context) =>
+              FirebaseAuthenticationRepository() as AuthenticationRepository,
+        ),
+      ],
+      child: MultiBlocProvider(
+        providers: [BlocProvider(create: (context) => AuthenticationBloc())],
+        child: MaterialApp(...)
 ```
-We can catch this error with the `try` and `catch` keywords in the `cubit`:
+where we also changed the `RepositoryProvider` to a `MultiRepositoryProvider` to be able to attach other repositories in the future.
+
+##  Page to use the AuthenticationBloc
+
+We create a new page `SignInPage` which will use the `AuthenticationBloc`. This page creates a reference to the `AuthenticationBloc` via:
 ```dart
-Future<void> login({required String email, required String password}) async {
-    try {
-      user = await authenticationRepository.signIn(
-        email: email,
-        password: password,
-      );
-      if (user == null) {
-        emit(LoginError(message: "User is null..."));
-        return;
-      }
-      emit(LoginSuccess());
-      return;
-    } catch (e) {
-      emit(LoginError(message: e.toString()));
-      return;
-    }
-  }
+    AuthenticationBloc authenticationBloc = BlocProvider.of<AuthenticationBloc>(
+      context,
+    );
 ```
-
-## Removing dependency to cubit from views
-One of the important design methods is to make sure your views are unrelated to your implementation. Therefore when we show an error message we pass the error message to the error view :
-```dart
-class LoginPage extends StatelessWidget {
-  ...
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          LoginCubit(RepositoryProvider.of<AuthenticationRepository>(context)),
-      child: BlocBuilder<LoginCubit, LoginState>(
-        builder: (context, state) {
-          switch (state) {
-            ...
-            case LoginError _:
-              return ErrorView(message: state.message);          
-            ...  
-          }}}}
+The rest of the flow will be implemented in the next phase. The `SignInPage` has a `BlocBuilder` which listens to the states of the `AuthenticationBloc`
+```dart 
+    return BlocBuilder<AuthenticationBloc, AuthenticationState>(
+      builder: (context, state) {
+        switch (state) {
+          default:
+            return SignInWaitingView();
+        }
+      },
+    );
 ```
+and currently we simply show a waiting view as the `default` case of the `switch`.
 
-and for the **login** function we pass the function as a parameter:
-```dart
-            case LoginInitial _:
-              return EmailPasswordView(
-                onLogin: BlocProvider.of<LoginCubit>(context).login,
-              );
-```
-with the usage in the `EmailPasswordView` defined as:
-```dart
-class EmailPasswordView extends StatefulWidget {
-  const EmailPasswordView({super.key, required this.onLogin});
-  final Future<void> Function({required String email, required String password})
-  onLogin;
-...
-}
-
-class _EmailPasswordViewState extends State<EmailPasswordView> {
-  ...
-
-  void loginUser() async {
-    ...
-    widget.onLogin(email: email!, password: password!);
-   ...
-
-  @override
-  Widget build(BuildContext context) {
-    ...
-  }}
-```
 

@@ -19,11 +19,9 @@ class LoginPage extends StatelessWidget {
         builder: (context, state) {
           switch (state) {
             case LoginInitial _:
-              return EmailPasswordView(
-                onLogin: BlocProvider.of<LoginCubit>(context).login,
-              );
+              return EmailPasswordView();
             case LoginError _:
-              return ErrorView(message: state.message);
+              return ErrorView();
             case LoginSuccess _:
               return SuccessView();
           }
