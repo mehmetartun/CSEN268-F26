@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'widgets/counter_widget.dart';
 import 'widgets/labeled_text_widget.dart';
