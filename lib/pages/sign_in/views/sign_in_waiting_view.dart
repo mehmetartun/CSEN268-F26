@@ -10,11 +10,7 @@ class SignInWaitingView extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 20),
-            Text('Signing In...'),
-          ],
+          children: [const CircularProgressIndicator()],
         ),
       ),
     );
