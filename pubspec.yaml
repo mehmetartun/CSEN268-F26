@@ -39,6 +39,8 @@ dependencies:
   flutter_lorem: ^2.0.0
   uuid: ^4.6.0
   flutter_bloc: ^9.1.1
+  bloc: any
+  meta: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
