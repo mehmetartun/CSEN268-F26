@@ -23,8 +23,7 @@ class HomePage extends StatelessWidget {
             ListTile(
               title: const Text('Login Cubit'),
               onTap: () {
-              
-                Navigator.pushNamed(context, '/loginCubit');
+              Navigator.of(context).popAndPushNamed('/loginCubit');
               },
             ),
             ListTile(
