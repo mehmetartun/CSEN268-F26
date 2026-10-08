@@ -1,111 +1,155 @@
-# Lecture 8 - 02
+# Lecture 8 - 03
 
-We continue with our **BLoC** implmentation. First we create the necessary states for authentication
+We start with the `GoRouter` implementation. We first do a cleanup of the repo and get rid of the Layout examples and the widget `Tappable`.
 
-## Authentication States
+The objective is to achieve the following structure:
 
-```dart
-sealed class AuthenticationState {}
+<img src="assets/images/Lecture 0801 Implementation Picture.png" width="600">
 
-final class AuthenticationInitial extends AuthenticationState {}
-
-final class AuthenticationError extends AuthenticationState {
-  final String errorText;
-
-  AuthenticationError({required this.errorText});
-}
-
-final class AuthenticationWaiting extends AuthenticationState {}
-
-final class AuthenticationAuthenticated extends AuthenticationState {}
-```
-
-The `AuthenticationInitial` state is a proxy for unauthenticated state. 
-
-> Note: It's possible (and useful) sometimes to distinguish between **unknown** and **unauthenticated** states.
-
-## Authentication Events
-
-The events that we will need to send to the `AuthenticationBloc` are:
-
-```dart 
-sealed class AuthenticationEvent {}
-
-class AuthenticationWithEmailEvent extends AuthenticationEvent {
-  final String email;
-  final String password;
-  AuthenticationWithEmailEvent({required this.email, required this.password});
-}
-
-class AuthenticationErrorEvent extends AuthenticationEvent {
-  final String errorText;
-  AuthenticationErrorEvent({required this.errorText});
-}
-
-class AuthenticationSignOutEvent extends AuthenticationEvent {} 
-```
-
-## Authentication Repository
-
-To handle the flow, we implement a `signOut()` method as well as an error to the `signIn()` method to simulate the error:
+To do that we first inject an `AuthenticationBloc` into the tree above the `MaterialApp`
 
 ```dart
+class MyApp extends StatelessWidget {
+  MyApp({super.key});
+  final authenticationBloc = AuthenticationBloc();
   @override
-  Future<User> signIn({required String email, required String password}) async {
-    await someFirebaseSpecificMethod();
-    if (password == "password") {
-      throw Exception("Invalid password");
-    }
-    return User.createMockUser();
-  }
-
-  @override
-  Future<void> signOut() async {
-    await Future.delayed(const Duration(seconds: 1), () {});
-  }
-```
-In the `signIn()` method we throw an `Exception` whenever the value of the `password` is simply **password**. 
-
-## Event Handler within the AuthenticationBloc
-
-The events received by the `AuthenticationBloc` are handled with the following code in the constructor:
-```dart
-  AuthenticationBloc(this.authenticationRepository)
-    : super(AuthenticationInitial()) {
-    on<AuthenticationWithEmailEvent>((event, emit) async {
-      await _handleLogin(event, emit);
-    });
-    on<AuthenticationErrorEvent>((event, emit) {
-      _handleError(event, emit);
-    });
-    on<AuthenticationSignOutEvent>((event, emit) async {
-      await _handleSignOut(event, emit);
-    });
-  }
-```
-Note here that two of these handlers are asynchronous and therefore they need to be awaited.
-
-## SignInPage
-
-Finally, the `SignInPage` has displays the views based on the state of AuthenticationBloc.
-```dart
-    return BlocBuilder<AuthenticationBloc, AuthenticationState>(
-      builder: (context, state) {
-        switch (state) {
-          case AuthenticationInitial _:
-            return SignInEmailPasswordView();
-          case AuthenticationAuthenticated _:
-            return SignInSignedInView();
-          case AuthenticationError _:
-            return SignInErrorView(error: state.errorText);
-          case AuthenticationWaiting():
-            return SignInWaitingView();
-        }
+  Widget build(BuildContext context) {
+    return RepositoryProvider(
+      create: (context) {
+        return (OktaAuthenticationRepository() as AuthenticationRepository);
       },
+      child: BlocProvider(
+        create: (context) => authenticationBloc..add(AuthenticationLoginEvent()),
+        child: MaterialApp.router(
+          title: 'Flutter Demo',
+          theme: ...
+          routerConfig: routerDemo(authenticationBloc),
+        ),
+      ),
     );
+  }
+}
+```
+Here the `bloc` is injected **after** the `RepositoryProvider` as the the bloc will require the `AuthenticationRepository` to be able to do the signing in.
+
+The `router` object is now defined together with a the `refreshListenable` and the `redirect` configurations to handle changes to the `AuthenticationState` and direct the routing accordingly. This is affected by:
+```dart
+GoRouter routerDemo(AuthenticationBloc authenticationBloc) {
+  return GoRouter(
+    navigatorKey: rootNavigatorKey,
+    initialLocation: '/users',
+    refreshListenable: StreamToListenable([authenticationBloc.stream]),
+    redirect: (context, state) async {
+      if (authenticationBloc.state is AuthenticationLoggedOut &&
+          (!(state.fullPath?.startsWith("/login") ?? false))) {
+        return "/login";
+      } else {
+        if ((state.fullPath?.startsWith("/login") ?? false) &&
+            authenticationBloc.state is AuthenticationLoggedIn) {
+          return "/users";
+        }
+      }
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: '/login',
+        name: RouteName.login,
+        builder: (context, state) {
+          return const RouterDemoLogin();
+        },
+      ),
+      GoRoute(
+        path: '/',
+        name: RouteName.home,
+        builder: (context, state) {
+          return const RouterDemoHome();
+        },
+        routes: [
+          ShellRoute(
+            navigatorKey: shellNavigatorKey,
+            builder: (BuildContext context, GoRouterState state, Widget child) {
+              return ScaffoldWithNavBar(child: child);
+            },
+            routes: <RouteBase>[
+              GoRoute(
+                path: 'users',
+                name: RouteName.users,
+                builder: (BuildContext context, GoRouterState state) {
+                  return const RouterDemoUsers();
+                },
+              ),
+              GoRoute(
+                path: 'profile',
+                name: RouteName.profile,
+                builder: (BuildContext context, GoRouterState state) {
+                  return const RouterDemoProfile();
+                },
+                routes: [
+                  GoRoute(
+                    path: 'detail',
+                    name: RouteName.profileDetail,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (BuildContext context, GoRouterState state) {
+                      return const RouterDemoProfileDetail();
+                    },
+                  ),
+}
+```
+The `ScaffoldWithNavBar` is a construct to allow the `ShellRoute` to have bottom navigation bottoms. It's defined in [ScaffoldWithNavBar](/lib/widgets/scaffold_with_nav_bar.dart).
+
+In addition the `StreamToListenable` is defined in the [utilities](./lib/utilities) folder as [StreamToListenable](/lib/utilities/stream_to_listenable.dart) which takes a list of streams as argument and turns them to a combined listenable object that is then used to trigger `redirect` everytime the listenable receives an update.
+
+An important item to note is the navigator keys that are being used. For the `profile detail` to be shown **without** the bottom navigation bar, we force the navigator of that page to be the `rootNavigator` rather then the `shellNavigator`. For this, we first create the keys:
+```dart
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: "Root",
+);
+final GlobalKey<NavigatorState> shellNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: "Shell",
+);
+```
+and inject them as follows in the `GoRouter` object:
+```dart
+GoRouter routerDemo(AuthenticationBloc authenticationBloc) {
+  return GoRouter(
+    navigatorKey: rootNavigatorKey,
+    initialLocation: '/users',
+    refreshListenable: StreamToListenable([authenticationBloc.stream]),
+    redirect: (context, state) async {
+        ...
+    },
+    routes: [
+      GoRoute(
+        path: '/login',
+        ...
+      ),
+      GoRoute(
+        path: '/',
+        ...
+        routes: [
+          ShellRoute(
+            navigatorKey: shellNavigatorKey,
+            builder: (BuildContext context, GoRouterState state, Widget child) {
+              return ScaffoldWithNavBar(child: child);
+            },
+            routes: <RouteBase>[
+              GoRoute(
+                path: 'users',
+                ...
+              ),
+              GoRoute(
+                path: 'profile',
+                ...
+                routes: [
+                  GoRoute(
+                    path: 'detail',
+                    parentNavigatorKey: rootNavigatorKey,
+                    ...
+                  ),
+}
 ```
 
 
-## Behaviour of the SignIn Page
 
-<img src="./assets/gifs/Lect0802_video.gif" width="300"/>
+
