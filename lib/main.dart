@@ -4,6 +4,7 @@ import 'pages/column_examples_page.dart';
 import 'pages/example_page.dart';
 import 'pages/home_page.dart';
 import 'pages/listview_example_page.dart';
+import 'pages/login/login_page.dart';
 import 'pages/single_child_scroll_view_and_list_view_error_page.dart';
 import 'pages/single_child_scroll_view_and_list_view_solution_example.dart';
 import 'pages/single_child_scroll_view_example_page.dart';
@@ -44,6 +45,8 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       routes: {
         "/": (context) => const HomePage(),
+        "/loginCubit": (context) => const LoginPage(),
+        "/example": (context) => const ExamplePage(),
         "/columnExamples": (context) => const ColumnExamplesPage(),
         "/listViewExample": (context) => const ListViewExamplePage(),
         // "/centerExample": (context) => const CenterExamplePage(),

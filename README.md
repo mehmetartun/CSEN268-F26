@@ -1,99 +1,83 @@
-# Lecture 6 - 01
+# Lecture 6 - 02
 
-As we start, we have defined a **model** for a `User` class.
+We now move to the **BLoC** pattern. Here we implement a very simple login flow using a **cubit** from the [flutter_bloc](https://pub.dev/packages/flutter_bloc) package.
 
-## Packages
-
-We add a number of packages to our codebase. 
-
-- Flutter Lorem [flutter_lorem](https://pub.dev/packages/flutter_lorem)
-- UUID [uuid](https://pub.dev/packages/uuid)
-- Math `dart:math`
-- Convert `dart:convert`
-
-The `flutter_lorem` package creates **Lorem Ipsum** text of desired lengths. This is to create random words or texts.
-
-The `uuid` package creates strings that we commonly see as `id`s in databases.
-
-The `dart:math` library which is built into the Dart language is for calculating a random number in selecting a color from a list of colors.
-
-The `dart:convert` library is used to do the conversion to and from **json**.
-
-## User Class
+## The Login Cubit
+The login page is created by `LoginPage` as a stateless widget. The function of this widget is to 
+1. Instantiate an appropriate cubit `LoginCubit`
+2. Show different views depending on the state of the cubit, i.e. `LoginState`.
 
 ```dart
-class User {
-  final String firstName;
-  ...
-  final String uid;
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
 
-  User({
-    required this.firstName,
-    ...
-    required this.uid,
-  });
-}
-```
-We then use the VSCode Extension **Dart Data Class Generator** to generate standard data methods for us such as:
-```dart
-  User copyWith({
-    String? firstName,
-    ...
-    String? uid,
-  }) {
-    return User(
-      firstName: firstName ?? this.firstName,
-      ...
-      uid: uid ?? this.uid,
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => LoginCubit(),
+      child: ...
     );
-  }
-```
-
-## Mock Service
-
-It's important for us to be able to mock data in our development. Therefore the `Mock` service is created
-```dart 
-class Mock {
-  static String firstName() {
-    return lorem(paragraphs: 1, words: 1).replaceAll(".", "");
-  }
-
-  static String lastName() {
-    return lorem(paragraphs: 1, words: 1).replaceAll(".", "");
-  }
-
-  static String email() {
-    return "${firstName()}@${lastName()}.com";
-  }
-
-  static String uid() {
-    return UuidV4().generate();
-  }
-
-  static String imageUrl({String? firstName, String? lastName}) {
-    return 'https://placehold.co/600x400/'
-        '${colors[math.Random().nextInt(10)]}'
-        '/${colors[math.Random().nextInt(10)]}.png';
   }
 }
 ```
 
-## Creating a random mock User
-
-By adding a constructor method to the `User` class we can create a random user:
+Note that `LoginState` is an abstract class created with the keyword `sealed` meaning it can only be extended in this file but nowhere else:
 ```dart
-  static User createMockUser() {
-    return User(
-      firstName: Mock.firstName(),
-      lastName: Mock.lastName(),
-      email: Mock.email(),
-      imageUrl: Mock.imageUrl(),
-      uid: Mock.uid(),
-    );
-  }
+sealed class LoginState {}
 ```
 
-## ListView Example
+Then we can crate different states based on this abstract class:
+```dart
+final class LoginInitial extends LoginState {}
+final class LoginError extends LoginState {}
+```
 
-And finally we use this random User in the `ListView`. Our [listview_example_page.dart](lib/listview_example_page.dart) is now modified to show a number of random users in a `ListTile`.
+## Directory
+The typical directory structure for a page with a cubit is as follows:
+```zsh
+lib/pages/login
+├── cubit
+│   ├── login_cubit.dart
+│   └── login_state.dart
+├── login_page.dart
+└── views
+    ├── email_password_view.dart
+    └── error_view.dart
+```
 
+## The methods in the cubit
+The cubit initially emits a state called `LoginInitial` through the constructor:
+```dart
+class LoginCubit extends Cubit<LoginState> {
+  LoginCubit() : super(LoginInitial());
+
+  void login(){
+    emit(LoginError());
+  }
+}
+```
+ This is then used to display the `EmailPasswordView` by the `LoginPage` widget:
+ ```dart
+ BlocBuilder<LoginCubit, LoginState>(
+        builder: (context, state) {
+          switch (state) {
+            case LoginInitial _:
+              return EmailPasswordView();
+            ...
+          }
+        },
+      ),
+ ```
+
+ ## Accessing methods of the cubit
+
+ In the `EmailPasswordView` we have a button that calls the `login()` method in the cubit:
+ ```dart
+      FilledButton(
+      child: Text("Login"),
+      onPressed: (){
+        BlocProvider.of<LoginCubit>(context).login();
+      },
+    ),
+```
+Here we access the cubit with the construct `BlocProvider.of<LoginCubit>(context)`. When this method is called, it emits an `LoginError()` state which is then captured by the `BlocBuilder` to display the `ErrorView`.
