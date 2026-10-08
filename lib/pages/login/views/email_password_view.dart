@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/login_cubit.dart';
 
 class EmailPasswordView extends StatefulWidget {
-  const EmailPasswordView({super.key});
+  const EmailPasswordView({super.key, required this.onLogin});
+  final Future<void> Function({required String email, required String password})
+  onLogin;
 
   @override
   State<EmailPasswordView> createState() => _EmailPasswordViewState();
@@ -16,6 +18,7 @@ class _EmailPasswordViewState extends State<EmailPasswordView> {
   TextEditingController passwordController = TextEditingController();
   String? email;
   String? password;
+  bool busy = false;
 
   @override
   void initState() {
@@ -31,10 +34,20 @@ class _EmailPasswordViewState extends State<EmailPasswordView> {
     super.dispose();
   }
 
+  void loginUser() async {
+    setState(() {
+      busy = true;
+    });
+    widget.onLogin(email: email!, password: password!);
+    setState(() {
+      busy = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login Page")),
+      appBar: AppBar(title: Text("Login with Auth Repo")),
       body: Center(
         child: Form(
           key: formKey,
@@ -55,6 +68,7 @@ class _EmailPasswordViewState extends State<EmailPasswordView> {
                     }
                     return null;
                   },
+                  readOnly: busy,
                 ),
                 TextFormField(
                   controller: passwordController,
@@ -69,15 +83,18 @@ class _EmailPasswordViewState extends State<EmailPasswordView> {
                     }
                     return null;
                   },
+                  readOnly: busy,
                 ),
                 FilledButton(
                   child: Text("Login"),
-                  onPressed: () {
-                    if (formKey.currentState?.validate() ?? false) {
-                      formKey.currentState?.save();
-                      BlocProvider.of<LoginCubit>(context).login(email: email!, password: password!);
-                    }
-                  },
+                  onPressed: busy
+                      ? null
+                      : () async {
+                          if (formKey.currentState?.validate() ?? false) {
+                            formKey.currentState?.save();
+                            loginUser();
+                          }
+                        },
                 ),
               ],
             ),
