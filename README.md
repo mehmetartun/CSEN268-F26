@@ -1,83 +1,58 @@
-# Lecture 6 - 02
+# Lecture 7 - 01 
 
-We now move to the **BLoC** pattern. Here we implement a very simple login flow using a **cubit** from the [flutter_bloc](https://pub.dev/packages/flutter_bloc) package.
+We implement a `Form` in the `EmailPasswordView` widget to submit email and password to the `LoginCubit`.
 
-## The Login Cubit
-The login page is created by `LoginPage` as a stateless widget. The function of this widget is to 
-1. Instantiate an appropriate cubit `LoginCubit`
-2. Show different views depending on the state of the cubit, i.e. `LoginState`.
+## The Form
 
+The `Form` is accessed by the `key` of the `FormState` with the declaration:
 ```dart
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+```
+With this key we can access the current state of the `Form` with `formKey.currentState` and run `validation` or `save` methods.
 
+## Input controllers
+The text inputs for email and password are done via the `TextEditingController()` which are defined:
+```dart
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+```
+It's important to note that they need to be disposed when the widget is disposed. This is done by providing the `dispose()` override:
+```dart
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => LoginCubit(),
-      child: ...
-    );
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
-}
 ```
+## Text form fields
 
-Note that `LoginState` is an abstract class created with the keyword `sealed` meaning it can only be extended in this file but nowhere else:
-```dart
-sealed class LoginState {}
-```
-
-Then we can crate different states based on this abstract class:
-```dart
-final class LoginInitial extends LoginState {}
-final class LoginError extends LoginState {}
-```
-
-## Directory
-The typical directory structure for a page with a cubit is as follows:
-```zsh
-lib/pages/login
-├── cubit
-│   ├── login_cubit.dart
-│   └── login_state.dart
-├── login_page.dart
-└── views
-    ├── email_password_view.dart
-    └── error_view.dart
-```
-
-## The methods in the cubit
-The cubit initially emits a state called `LoginInitial` through the constructor:
-```dart
-class LoginCubit extends Cubit<LoginState> {
-  LoginCubit() : super(LoginInitial());
-
-  void login(){
-    emit(LoginError());
-  }
-}
-```
- This is then used to display the `EmailPasswordView` by the `LoginPage` widget:
- ```dart
- BlocBuilder<LoginCubit, LoginState>(
-        builder: (context, state) {
-          switch (state) {
-            case LoginInitial _:
-              return EmailPasswordView();
-            ...
-          }
-        },
-      ),
- ```
-
- ## Accessing methods of the cubit
-
- In the `EmailPasswordView` we have a button that calls the `login()` method in the cubit:
- ```dart
-      FilledButton(
-      child: Text("Login"),
-      onPressed: (){
-        BlocProvider.of<LoginCubit>(context).login();
+The declaration of the form fields is as follows:
+  ```dart
+      TextFormField(
+      controller: passwordController,
+      obscureText: true,
+      decoration: InputDecoration(label: Text("Password")),
+      onSaved: (val) {
+        password = val;
+      },
+      validator: (val) {
+        if (val == null || val.trim() == "") {
+          return "Password must not be empty";
+        }
+        return null;
       },
     ),
+  ```
+where the `onSaved(val)` and `validator(val)` methods are given. The `validator(val)` returns `null` if validation succeeds or returns a `String` explaining the reason of the failure. 
+
+## Submitting the form
+
+The submission of the form is done as follows:
+```dart
+    if (formKey.currentState?.validate() ?? false) {
+      formKey.currentState?.save();
+      BlocProvider.of<LoginCubit>(context).login(email: email!, password: password!);
+    }
 ```
-Here we access the cubit with the construct `BlocProvider.of<LoginCubit>(context)`. When this method is called, it emits an `LoginError()` state which is then captured by the `BlocBuilder` to display the `ErrorView`.
+First the `Form` is validated, then if that succeeds, the `save` method is called which transfers the values in the controllers to the variables `email` and `password`. Finally these are passed to the `login()` method of the cubit.
