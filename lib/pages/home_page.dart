@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -21,9 +21,15 @@ class HomePage extends StatelessWidget {
               ),
             ),
             ListTile(
-              title: const Text('Login'),
+              title: const Text('Login Page (Cubit)'),
               onTap: () {
-                Navigator.of(context).popAndPushNamed('/login');
+                Navigator.of(context).popAndPushNamed('/loginPage');
+              },
+            ),
+            ListTile(
+              title: const Text('SignIn Page (Bloc)'),
+              onTap: () {
+                Navigator.of(context).popAndPushNamed('/signInPage');
               },
             ),
             ListTile(

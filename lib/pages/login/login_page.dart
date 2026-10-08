@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../repositories/authentication/authentication_repository.dart';
@@ -19,11 +19,9 @@ class LoginPage extends StatelessWidget {
         builder: (context, state) {
           switch (state) {
             case LoginInitial _:
-              return EmailPasswordView(
-                onLogin: BlocProvider.of<LoginCubit>(context).login,
-              );
+              return EmailPasswordView();
             case LoginError _:
-              return ErrorView(message: state.message);
+              return ErrorView();
             case LoginSuccess _:
               return SuccessView();
           }
