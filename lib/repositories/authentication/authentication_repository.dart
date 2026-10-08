@@ -6,17 +6,13 @@ abstract class AuthenticationRepository {
 
 class FirebaseAuthenticationRepository extends AuthenticationRepository {
   Future<void> someFirebaseSpecificMethod() async {
-    await Future.delayed(const Duration(seconds: 3), () {});
+    await Future.delayed(const Duration(seconds: 10), () {});
   }
 
   @override
   Future<User> signIn({required String email, required String password}) async {
     await someFirebaseSpecificMethod();
-    if (password == "TopSecret") {
-      return User.createMockUser();
-    } else {
-      throw Exception("Wrong password");
-    }
+    return User.createMockUser();
   }
 }
 
