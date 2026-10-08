@@ -20,7 +20,13 @@ class HomePage extends StatelessWidget {
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
             ),
-
+            ListTile(
+              title: const Text('Login Cubit'),
+              onTap: () {
+              
+                Navigator.pushNamed(context, '/loginCubit');
+              },
+            ),
             ListTile(
               title: const Text('Column Examples'),
               onTap: () {
