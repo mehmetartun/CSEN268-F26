@@ -1,125 +1,99 @@
-# Lecture 5 - 02
+# Lecture 6 - 01
 
-In this part we explore **Layout** widgets in Flutter as well as a basic routing to be able to switch between examples and also the `Drawer` widget for navigation.
+As we start, we have defined a **model** for a `User` class.
 
-## Routing
+## Packages
 
-The most basic routing is as shown here in the definition of the `MaterialApp`:
+We add a number of packages to our codebase. 
+
+- Flutter Lorem [flutter_lorem](https://pub.dev/packages/flutter_lorem)
+- UUID [uuid](https://pub.dev/packages/uuid)
+- Math `dart:math`
+- Convert `dart:convert`
+
+The `flutter_lorem` package creates **Lorem Ipsum** text of desired lengths. This is to create random words or texts.
+
+The `uuid` package creates strings that we commonly see as `id`s in databases.
+
+The `dart:math` library which is built into the Dart language is for calculating a random number in selecting a color from a list of colors.
+
+The `dart:convert` library is used to do the conversion to and from **json**.
+
+## User Class
+
 ```dart
-MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      initialRoute: "/",
-      routes: {
-        "/": (context) => const HomePage(),
-        "/columnExamples": (context) => const ColumnExamplesPage(),
-        "/listViewExample": (context) => const ListViewExamplePage(),
-        // "/centerExample": (context) => const CenterExamplePage(),
-        "/singleChildScrollViewExample": (context) =>
-            const SingleChildScrollViewExamplePage(),
-        "/singleChildScrollViewAndListViewErrorExample": (context) =>
-            const SingleChildScrollViewAndListViewErrorExamplePage(),
-        "/singleChildScrollViewAndListViewSolutionExample": (context) =>
-            const SingleChildScrollViewAndListViewSolutionExamplePage(),
-      },
-    )
+class User {
+  final String firstName;
+  ...
+  final String uid;
+
+  User({
+    required this.firstName,
+    ...
+    required this.uid,
+  });
+}
 ```
-You define the `initialRoute` and then a number of routes with the name of the route being the named route such that you can call `Navigator.of(context).pushNamed(<routeName>)` to push a new route on the stack in the `Drawer` which is defined in the `HomePage`:
+We then use the VSCode Extension **Dart Data Class Generator** to generate standard data methods for us such as:
 ```dart
-Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-              ),
-              child: Text(
-                'Navigation', style: Theme.of(context).textTheme.headlineMedium,),
-            ),
-            ListTile(
-              title: const Text('Column Examples'),
-              onTap: () {
-                Navigator.pushNamed(context, '/columnExamples');
-              },
-            ),
-            ...
-          ],
-        ),
-      ),
+  User copyWith({
+    String? firstName,
+    ...
+    String? uid,
+  }) {
+    return User(
+      firstName: firstName ?? this.firstName,
+      ...
+      uid: uid ?? this.uid,
+    );
+  }
 ```
 
-## Column
-In the `Column` examples you can see various settings of the `Column` widget.
+## Mock Service
 
+It's important for us to be able to mock data in our development. Therefore the `Mock` service is created
+```dart 
+class Mock {
+  static String firstName() {
+    return lorem(paragraphs: 1, words: 1).replaceAll(".", "");
+  }
 
+  static String lastName() {
+    return lorem(paragraphs: 1, words: 1).replaceAll(".", "");
+  }
 
-## SingleChildScrollView
-Here we include a `Column` as the child of the `SingleChildScrollView`.
+  static String email() {
+    return "${firstName()}@${lastName()}.com";
+  }
+
+  static String uid() {
+    return UuidV4().generate();
+  }
+
+  static String imageUrl({String? firstName, String? lastName}) {
+    return 'https://placehold.co/600x400/'
+        '${colors[math.Random().nextInt(10)]}'
+        '/${colors[math.Random().nextInt(10)]}.png';
+  }
+}
+```
+
+## Creating a random mock User
+
+By adding a constructor method to the `User` class we can create a random user:
 ```dart
-SingleChildScrollView(
-        child: Column(
-          children: [
-            Tappable(color: Colors.amber),
-            ...
-            Tappable(color: Colors.grey),
-          ],
-        ),
-      ),
-```
-Note: In this example keep tapping in one of the `Tappable` objects and make the counter go to 10 to see the width change and see the effect on the display.
-
-## ListView
-
-The `ListView` can be used on it's own as the `body` of a `Scaffold` as shown here:
-```dart
-ListView(
-        padding: const EdgeInsets.all(8.0),
-        children: [
-          Tappable(color: Colors.amber),
-          ...
-          Tappable(color: Colors.grey),
-        ],
-      ),
+  static User createMockUser() {
+    return User(
+      firstName: Mock.firstName(),
+      lastName: Mock.lastName(),
+      email: Mock.email(),
+      imageUrl: Mock.imageUrl(),
+      uid: Mock.uid(),
+    );
+  }
 ```
 
-## Error with SingleChildScrollView and ListView
-In the file [single_child_scroll_view_example_page.dart](/lib/pages/single_child_scroll_view_example_page.dart), using the `SingleChildScrollView` with `ListView` in the default setting:
-```dart
-SingleChildScrollView(
-        child: ListView(
-          children: [
-            Tappable(color: Colors.amber),
-            ...
-            Tappable(color: Colors.grey),
-          ],
-        ),
-      ),
-```
-we will get this error:
-```zsh
-════════ Exception caught by rendering library ═════════════════════════════════
-The following assertion was thrown during performResize():
-Vertical viewport was given unbounded height.
-```
-This is because `SingleChildScrollView` allows it's children to have infinite height and `ListView` is trying to fill all the available space.
+## ListView Example
 
-## Solution to SingleChildScrollView and ListView
-The solution is using `shrinkWrap` and `NeverScrollableScrollPhysics()` for scroll behaviour in the `ListView`.
-```dart
- SingleChildScrollView(
-        child: ListView(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          children: [
-            Tappable(color: Colors.amber),
-            ...
-            Tappable(color: Colors.grey),
-          ],
-        ),
-      ),
-```
+And finally we use this random User in the `ListView`. Our [listview_example_page.dart](lib/listview_example_page.dart) is now modified to show a number of random users in a `ListTile`.
 

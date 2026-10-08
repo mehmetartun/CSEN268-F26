@@ -1,4 +1,4 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 
 import 'pages/column_examples_page.dart';
 import 'pages/example_page.dart';
