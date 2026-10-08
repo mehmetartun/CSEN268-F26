@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:material_ui/material_ui.dart';
 
 TextTheme createTextTheme(
   BuildContext context,
@@ -7,10 +7,8 @@ TextTheme createTextTheme(
   String displayFontString,
 ) {
   TextTheme baseTextTheme = Theme.of(context).textTheme;
-  TextTheme bodyTextTheme = GoogleFonts.getTextTheme(
-    bodyFontString,
-    baseTextTheme,
-  );
+  TextTheme bodyTextTheme =
+      GoogleFonts.getTextTheme(bodyFontString, baseTextTheme) as TextTheme;
   TextTheme displayTextTheme = GoogleFonts.getTextTheme(
     displayFontString,
     baseTextTheme,

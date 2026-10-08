@@ -5,7 +5,7 @@ import 'pages/list_view_page.dart';
 import 'pages/page_with_double_scrollview.dart';
 import 'theme/theme_util.dart';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'theme/theme.dart';
 
@@ -33,7 +33,8 @@ class MyApp extends StatelessWidget {
       // home: const MyHomePage(title: 'CSEN268 Demo Home Page'),
       // home: const MyHomePage(title: 'My Home'),
       // home: const PageWithDoubleScrollview(),
-      home: const ColumnPage(),
+      home: const ListViewPage(),
+      // home: const ColumnPage(),
     );
   }
 }

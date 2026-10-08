@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class PageWithDoubleScrollview extends StatelessWidget {
   const PageWithDoubleScrollview({super.key});
@@ -13,16 +13,15 @@ class PageWithDoubleScrollview extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.settings),
             onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text("Settings Clicked")));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text("Settings Clicked")));
             },
           ),
         ],
       ),
       body: SingleChildScrollView(
         child: Container(
-          width: double.infinity,
+          // width: double.infinity,
           color: Colors.yellow,
           alignment: Alignment.center,
           child: Column(
@@ -66,14 +65,14 @@ class PageWithDoubleScrollview extends StatelessWidget {
                       ),
                       SizedBox(width: 20),
                       Text(
-                        "Horizontal 3",
+                        "Horizontal 4",
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
                       ),
                       SizedBox(width: 20),
                       Text(
-                        "Horizontal 3",
+                        "Horizontal 5",
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
