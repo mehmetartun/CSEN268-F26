@@ -1,58 +1,45 @@
-# Lecture 7 - 01 
+# Lecture 7 - 02
 
-We implement a `Form` in the `EmailPasswordView` widget to submit email and password to the `LoginCubit`.
-
-## The Form
-
-The `Form` is accessed by the `key` of the `FormState` with the declaration:
+To evaluate the **Repository Pattern** we crate a  abstract class `AuthenticationRepository`:
 ```dart
-  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+abstract class AuthenticationRepository {
+  Future<User> signIn({required String email, required String password});
+}
 ```
-With this key we can access the current state of the `Form` with `formKey.currentState` and run `validation` or `save` methods.
 
-## Input controllers
-The text inputs for email and password are done via the `TextEditingController()` which are defined:
+and create two separate implementations `FirebaseAuthenticationRepository` and `OktaAuthenticationRepository`. These both extend the abstract class `AuthenticationRepository`
+
 ```dart
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-```
-It's important to note that they need to be disposed when the widget is disposed. This is done by providing the `dispose()` override:
-```dart
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
+class FirebaseAuthenticationRepository extends AuthenticationRepository {
+  Future<void> someFirebaseSpecificMethod() async {
+    await Future.delayed(const Duration(seconds: 10), () {});
   }
+
+  @override
+  Future<User> signIn({required String email, required String password}) async {
+    await someFirebaseSpecificMethod();
+    return User.createMockUser();
+  }
+}
 ```
-## Text form fields
+The key here is that the abstract class specifies a method `signIn` which needs to be implemented by both repositories.
 
-The declaration of the form fields is as follows:
-  ```dart
-      TextFormField(
-      controller: passwordController,
-      obscureText: true,
-      decoration: InputDecoration(label: Text("Password")),
-      onSaved: (val) {
-        password = val;
-      },
-      validator: (val) {
-        if (val == null || val.trim() == "") {
-          return "Password must not be empty";
-        }
-        return null;
-      },
-    ),
-  ```
-where the `onSaved(val)` and `validator(val)` methods are given. The `validator(val)` returns `null` if validation succeeds or returns a `String` explaining the reason of the failure. 
+## Login Cubit
 
-## Submitting the form
-
-The submission of the form is done as follows:
+The injection of the `AuthenticationRepository` to the `LoginCubit` is done via the constructor:
 ```dart
-    if (formKey.currentState?.validate() ?? false) {
-      formKey.currentState?.save();
-      BlocProvider.of<LoginCubit>(context).login(email: email!, password: password!);
-    }
+class LoginCubit extends Cubit<LoginState> {
+  LoginCubit(this.authenticationRepository) : super(LoginInitial());
+  User? user;
+  final AuthenticationRepository authenticationRepository;
+  ...
+}
 ```
-First the `Form` is validated, then if that succeeds, the `save` method is called which transfers the values in the controllers to the variables `email` and `password`. Finally these are passed to the `login()` method of the cubit.
+where the `User` variable is necessary to hold the return value from the `signIn` method.
+
+When the `LoginCubit` is created in the `LoginPage` the `AuthenticationRepository` from the widget tree is injected as:
+```dart
+    return BlocProvider(
+      create: (context) => LoginCubit(RepositoryProvider.of<AuthenticationRepository>(context)),
+      child: BlocBuilder<LoginCubit, LoginState>(...)
+```
