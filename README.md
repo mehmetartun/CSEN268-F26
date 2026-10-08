@@ -1,58 +1,88 @@
-# Lecture 7 - 01 
+# Lecture 7 - 03
 
-We implement a `Form` in the `EmailPasswordView` widget to submit email and password to the `LoginCubit`.
+## Error Handling
 
-## The Form
-
-The `Form` is accessed by the `key` of the `FormState` with the declaration:
+We look at error handling in the authentication flow by throwing an **Exception** in the authentication repository:
 ```dart
-  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+class FirebaseAuthenticationRepository extends AuthenticationRepository {
+  ...
+  Future<User> signIn({required String email, required String password}) async {
+    ...
+    if (password == "TopSecret") {
+      return User.createMockUser();
+    } else {
+      throw Exception("Wrong password");
+    }
+  }
+}
 ```
-With this key we can access the current state of the `Form` with `formKey.currentState` and run `validation` or `save` methods.
-
-## Input controllers
-The text inputs for email and password are done via the `TextEditingController()` which are defined:
+We can catch this error with the `try` and `catch` keywords in the `cubit`:
 ```dart
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-```
-It's important to note that they need to be disposed when the widget is disposed. This is done by providing the `dispose()` override:
-```dart
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
+Future<void> login({required String email, required String password}) async {
+    try {
+      user = await authenticationRepository.signIn(
+        email: email,
+        password: password,
+      );
+      if (user == null) {
+        emit(LoginError(message: "User is null..."));
+        return;
+      }
+      emit(LoginSuccess());
+      return;
+    } catch (e) {
+      emit(LoginError(message: e.toString()));
+      return;
+    }
   }
 ```
-## Text form fields
 
-The declaration of the form fields is as follows:
-  ```dart
-      TextFormField(
-      controller: passwordController,
-      obscureText: true,
-      decoration: InputDecoration(label: Text("Password")),
-      onSaved: (val) {
-        password = val;
-      },
-      validator: (val) {
-        if (val == null || val.trim() == "") {
-          return "Password must not be empty";
-        }
-        return null;
-      },
-    ),
-  ```
-where the `onSaved(val)` and `validator(val)` methods are given. The `validator(val)` returns `null` if validation succeeds or returns a `String` explaining the reason of the failure. 
-
-## Submitting the form
-
-The submission of the form is done as follows:
+## Removing dependency to cubit from views
+One of the important design methods is to make sure your views are unrelated to your implementation. Therefore when we show an error message we pass the error message to the error view :
 ```dart
-    if (formKey.currentState?.validate() ?? false) {
-      formKey.currentState?.save();
-      BlocProvider.of<LoginCubit>(context).login(email: email!, password: password!);
-    }
+class LoginPage extends StatelessWidget {
+  ...
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) =>
+          LoginCubit(RepositoryProvider.of<AuthenticationRepository>(context)),
+      child: BlocBuilder<LoginCubit, LoginState>(
+        builder: (context, state) {
+          switch (state) {
+            ...
+            case LoginError _:
+              return ErrorView(message: state.message);          
+            ...  
+          }}}}
 ```
-First the `Form` is validated, then if that succeeds, the `save` method is called which transfers the values in the controllers to the variables `email` and `password`. Finally these are passed to the `login()` method of the cubit.
+
+and for the **login** function we pass the function as a parameter:
+```dart
+            case LoginInitial _:
+              return EmailPasswordView(
+                onLogin: BlocProvider.of<LoginCubit>(context).login,
+              );
+```
+with the usage in the `EmailPasswordView` defined as:
+```dart
+class EmailPasswordView extends StatefulWidget {
+  const EmailPasswordView({super.key, required this.onLogin});
+  final Future<void> Function({required String email, required String password})
+  onLogin;
+...
+}
+
+class _EmailPasswordViewState extends State<EmailPasswordView> {
+  ...
+
+  void loginUser() async {
+    ...
+    widget.onLogin(email: email!, password: password!);
+   ...
+
+  @override
+  Widget build(BuildContext context) {
+    ...
+  }}
+```
+
