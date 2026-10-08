@@ -1,7 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
-import 'widgets/counter_widget.dart';
-import 'widgets/labeled_text_widget.dart';
+import 'pages/column_examples_page.dart';
+import 'pages/example_page.dart';
+import 'pages/home_page.dart';
+import 'pages/listview_example_page.dart';
+import 'pages/single_child_scroll_view_and_list_view_error_page.dart';
+import 'pages/single_child_scroll_view_and_list_view_solution_example.dart';
+import 'pages/single_child_scroll_view_example_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,60 +21,39 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // TRY THIS: Try running your application with "flutter run". You'll see
+        // the application has a purple toolbar. Then, without quitting the app,
+        // try changing the seedColor in the colorScheme below to Colors.green
+        // and then invoke "hot reload" (save your changes or press the "hot
+        // reload" button in a Flutter-supported IDE, or press "r" if you used
+        // the command line to start the app).
+        //
+        // Notice that the counter didn't reset back to zero; the application
+        // state is not lost during the reload. To reset the state, use hot
+        // restart instead.
+        //
+        // This works for code too, not just values: Most code changes can be
+        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'CSEN268 Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    print("Rebuilding.... $_counter");
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            SizedBox(height: 20),
-            CounterWidget(),
-            SizedBox(height: 20),
-            LabeledTextWidget(label: "Label", text: "Text Text Text"),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // home: const ExamplePage(),
+      initialRoute: "/",
+      routes: {
+        "/": (context) => const HomePage(),
+        "/columnExamples": (context) => const ColumnExamplesPage(),
+        "/listViewExample": (context) => const ListViewExamplePage(),
+        // "/centerExample": (context) => const CenterExamplePage(),
+        "/singleChildScrollViewExample": (context) =>
+            const SingleChildScrollViewExamplePage(),
+        "/singleChildScrollViewAndListViewErrorExample": (context) =>
+            const SingleChildScrollViewAndListViewErrorExamplePage(),
+        "/singleChildScrollViewAndListViewSolutionExample": (context) =>
+            const SingleChildScrollViewAndListViewSolutionExamplePage(),
+      },
     );
   }
 }
