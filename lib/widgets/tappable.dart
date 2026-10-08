@@ -1,4 +1,4 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 
 class Tappable extends StatefulWidget {
   const Tappable({super.key, this.color});
