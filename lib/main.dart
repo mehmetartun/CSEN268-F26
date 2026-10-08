@@ -27,11 +27,17 @@ class MyApp extends StatelessWidget {
       providers: [
         RepositoryProvider(
           create: (context) =>
-              FirebaseAuthenticationRepository() as AuthenticationRepository,
+              OktaAuthenticationRepository() as AuthenticationRepository,
         ),
       ],
       child: MultiBlocProvider(
-        providers: [BlocProvider(create: (context) => AuthenticationBloc())],
+        providers: [
+          BlocProvider(
+            create: (context) => AuthenticationBloc(
+              RepositoryProvider.of<AuthenticationRepository>(context),
+            ),
+          ),
+        ],
         child: MaterialApp(
           title: 'Flutter Demo',
           theme: ThemeData(
