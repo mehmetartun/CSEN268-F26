@@ -6,7 +6,8 @@ part 'login_state.dart';
 class LoginCubit extends Cubit<LoginState> {
   LoginCubit() : super(LoginInitial());
 
-  void login(){
-    emit(LoginError());
+  void login({required String email, required String password}){
+    // emit(LoginError());
+    emit(LoginSuccess());
   }
 }
