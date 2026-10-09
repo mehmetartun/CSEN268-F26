@@ -1,0 +1,18 @@
+import 'package:material_ui/material_ui.dart';
+
+import '../widgets/main_drawer.dart';
+
+class GenericPage extends StatelessWidget {
+  const GenericPage({super.key, required this.title, this.child});
+  final String title;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      drawer: MainDrawer(),
+      body: child ?? Container(),
+    );
+  }
+}

@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'blocs/authentication/authentication_bloc.dart';
-import 'navigation/routerdemo.dart';
-import 'pages/home_page.dart';
-import 'pages/login/login_page.dart';
+import 'navigation/router.dart';
 import 'repositories/authentication/authentication_repository.dart';
 
 void main() {
@@ -28,12 +26,12 @@ class MyApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [BlocProvider(create: (context) => authenticationBloc)],
         child: MaterialApp.router(
-          title: 'Flutter Demo',
+          title: 'CSEN 268 Fall 2025',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),
-          routerConfig: routerDemo(authenticationBloc),
+          routerConfig: router,
         ),
       ),
     );
