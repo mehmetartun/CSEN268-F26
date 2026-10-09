@@ -1,155 +1,55 @@
-# Lecture 8 - 03
+# Lecture 9 - 01
 
-We start with the `GoRouter` implementation. We first do a cleanup of the repo and get rid of the Layout examples and the widget `Tappable`.
+## Enhanced Enum
 
-The objective is to achieve the following structure:
-
-<img src="assets/images/Lecture 0801 Implementation Picture.png" width="600">
-
-To do that we first inject an `AuthenticationBloc` into the tree above the `MaterialApp`
+We explore the concept of enhanced `enum` in the router names defined by:
 
 ```dart
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
-  final authenticationBloc = AuthenticationBloc();
-  @override
-  Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (context) {
-        return (OktaAuthenticationRepository() as AuthenticationRepository);
-      },
-      child: BlocProvider(
-        create: (context) => authenticationBloc..add(AuthenticationLoginEvent()),
-        child: MaterialApp.router(
-          title: 'Flutter Demo',
-          theme: ...
-          routerConfig: routerDemo(authenticationBloc),
-        ),
-      ),
-    );
-  }
+enum MyNavigatorRoute {
+  home("/", "home"),
+  images("images", "images"),
+  map("map", "map");
+
+  const MyNavigatorRoute(this.path, this.name);
+
+  final String path;
+  final String name;
 }
 ```
-Here the `bloc` is injected **after** the `RepositoryProvider` as the the bloc will require the `AuthenticationRepository` to be able to do the signing in.
+such that `MyNavigatorRoute.home.path` resolves to `'/'` and `MyNavigatorRoute.home.name` resolves to `'home'`.
 
-The `router` object is now defined together with a the `refreshListenable` and the `redirect` configurations to handle changes to the `AuthenticationState` and direct the routing accordingly. This is affected by:
-```dart
-GoRouter routerDemo(AuthenticationBloc authenticationBloc) {
-  return GoRouter(
-    navigatorKey: rootNavigatorKey,
-    initialLocation: '/users',
-    refreshListenable: StreamToListenable([authenticationBloc.stream]),
-    redirect: (context, state) async {
-      if (authenticationBloc.state is AuthenticationLoggedOut &&
-          (!(state.fullPath?.startsWith("/login") ?? false))) {
-        return "/login";
-      } else {
-        if ((state.fullPath?.startsWith("/login") ?? false) &&
-            authenticationBloc.state is AuthenticationLoggedIn) {
-          return "/users";
-        }
-      }
-      return null;
-    },
-    routes: [
-      GoRoute(
-        path: '/login',
-        name: RouteName.login,
-        builder: (context, state) {
-          return const RouterDemoLogin();
-        },
-      ),
-      GoRoute(
-        path: '/',
-        name: RouteName.home,
-        builder: (context, state) {
-          return const RouterDemoHome();
-        },
-        routes: [
-          ShellRoute(
-            navigatorKey: shellNavigatorKey,
-            builder: (BuildContext context, GoRouterState state, Widget child) {
-              return ScaffoldWithNavBar(child: child);
-            },
-            routes: <RouteBase>[
-              GoRoute(
-                path: 'users',
-                name: RouteName.users,
-                builder: (BuildContext context, GoRouterState state) {
-                  return const RouterDemoUsers();
-                },
-              ),
-              GoRoute(
-                path: 'profile',
-                name: RouteName.profile,
-                builder: (BuildContext context, GoRouterState state) {
-                  return const RouterDemoProfile();
-                },
-                routes: [
-                  GoRoute(
-                    path: 'detail',
-                    name: RouteName.profileDetail,
-                    parentNavigatorKey: rootNavigatorKey,
-                    builder: (BuildContext context, GoRouterState state) {
-                      return const RouterDemoProfileDetail();
-                    },
-                  ),
-}
-```
-The `ScaffoldWithNavBar` is a construct to allow the `ShellRoute` to have bottom navigation bottoms. It's defined in [ScaffoldWithNavBar](/lib/widgets/scaffold_with_nav_bar.dart).
 
-In addition the `StreamToListenable` is defined in the [utilities](./lib/utilities) folder as [StreamToListenable](/lib/utilities/stream_to_listenable.dart) which takes a list of streams as argument and turns them to a combined listenable object that is then used to trigger `redirect` everytime the listenable receives an update.
+## Images
 
-An important item to note is the navigator keys that are being used. For the `profile detail` to be shown **without** the bottom navigation bar, we force the navigator of that page to be the `rootNavigator` rather then the `shellNavigator`. For this, we first create the keys:
+In this lecture we implement image picker and saving images onto the device. The key here is that web and mobile work differently in displaying images. Therefore we employ conditional imports
+
+## Conditional Imports
+
+For saving images and displaying images, we implemented two classes `SaveImage` and `DisplayImage`
+which needs a separate implementation for Web and Android/iOS. Primarily this is due to the fact
+that **Flutter Web** uses the `dart:html` library and for all other platforms `dart:io` library is used.
+
+Packages like `image_picker` uses the cross-platform file package `cross_file` with the object `XFile` returned
+as the file object. This has to be handled differently in Web vs Android/iOS (and also MacOS, Windows, etc).
+
+Therefore the typical conditional import structure is as follows:
+
+    save_image.dart
+    save_image_other.dart
+    save_image_web.dart
+    save_image_io.dart
+
+the purpose of `save_image.dart` will be to simply expose one of the specific implementations depending on the platform
+where the program is running.
+
 ```dart
-final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
-  debugLabel: "Root",
-);
-final GlobalKey<NavigatorState> shellNavigatorKey = GlobalKey<NavigatorState>(
-  debugLabel: "Shell",
-);
-```
-and inject them as follows in the `GoRouter` object:
-```dart
-GoRouter routerDemo(AuthenticationBloc authenticationBloc) {
-  return GoRouter(
-    navigatorKey: rootNavigatorKey,
-    initialLocation: '/users',
-    refreshListenable: StreamToListenable([authenticationBloc.stream]),
-    redirect: (context, state) async {
-        ...
-    },
-    routes: [
-      GoRoute(
-        path: '/login',
-        ...
-      ),
-      GoRoute(
-        path: '/',
-        ...
-        routes: [
-          ShellRoute(
-            navigatorKey: shellNavigatorKey,
-            builder: (BuildContext context, GoRouterState state, Widget child) {
-              return ScaffoldWithNavBar(child: child);
-            },
-            routes: <RouteBase>[
-              GoRoute(
-                path: 'users',
-                ...
-              ),
-              GoRoute(
-                path: 'profile',
-                ...
-                routes: [
-                  GoRoute(
-                    path: 'detail',
-                    parentNavigatorKey: rootNavigatorKey,
-                    ...
-                  ),
-}
+export 'save_image_other.dart'
+    if (dart.library.io) 'save_image_io.dart'
+    if (dart.library.html) 'save_image_web.dart'
 ```
 
+This way the platform specific imports such as `dart:html` or `dart:io` can be hidden in the  files
+`save_image_web.dart` and `save_image_io.dart` respectively.
 
-
-
+The same goes for displaying images. A file on the local device in **Flutter Web** can be displayed using `Image.network` whereas 
+a file  in the local device in all others can be displayed with `Image.file`. A similar conditional import structure is shown here in the definition of the class `DisplayImage`.
