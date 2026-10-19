@@ -21,6 +21,7 @@ class _SignInEmailPasswordViewState extends State<SignInEmailPasswordView> {
 
   @override
   void initState() {
+    // can never be async!!!!!!
     // TODO: implement initState
     authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     super.initState();

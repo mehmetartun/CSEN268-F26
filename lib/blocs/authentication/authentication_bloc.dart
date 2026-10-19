@@ -46,8 +46,9 @@ class AuthenticationBloc
       emit(AuthenticationAuthenticated());
       return;
     } catch (e) {
-      emit(AuthenticationError(errorText: e.toString()));
-      print(e);
+      // emit(AuthenticationError(errorText: e.toString()));
+      add(AuthenticationErrorEvent(errorText: e.toString()));
+      // print(e);
     }
   }
 }

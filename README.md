@@ -105,6 +105,21 @@ Finally, the `SignInPage` has displays the views based on the state of Authentic
     );
 ```
 
+## BlocObserver
+By defining a `BlocObserver` in the file `my_blocobserver.dart` we are able to monitor any events happening in the blocs for tracing
+```dart
+lass MyBlocObserver extends BlocObserver {
+  const MyBlocObserver();
+
+  @override
+  void onCreate(BlocBase bloc) {
+    super.onCreate(bloc);
+    print('**BLOC** onCreate -- ${bloc.runtimeType}');
+  }
+  ...
+}
+```
+Here for each action within the Bloc we can print out information that we need to see for debugging.
 
 ## Behaviour of the SignIn Page
 

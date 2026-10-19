@@ -25,7 +25,7 @@ class SignInPage extends StatelessWidget {
             return SignInSignedInView();
           case AuthenticationError _:
             return SignInErrorView(error: state.errorText);
-          case AuthenticationWaiting():
+          case AuthenticationWaiting _:
             return SignInWaitingView();
         }
       },

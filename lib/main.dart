@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'blocs/authentication/authentication_bloc.dart';
+import 'blocs/my_bloc_observer.dart';
 import 'pages/column_examples_page.dart';
 import 'pages/example_page.dart';
 import 'pages/home_page.dart';
@@ -14,6 +15,7 @@ import 'pages/single_child_scroll_view_example_page.dart';
 import 'repositories/authentication/authentication_repository.dart';
 
 void main() {
+  Bloc.observer = const MyBlocObserver();
   runApp(const MyApp());
 }
 
