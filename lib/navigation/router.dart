@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../pages/generic_page.dart';
 import '../pages/image_page.dart';
+import '../pages/map_page.dart';
 import 'my_navigator_route.dart';
 
 final GoRouter router = GoRouter(
@@ -20,7 +21,7 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: MyNavigatorRoute.map.path,
           name: MyNavigatorRoute.map.name,
-          builder: (context, state) => GenericPage(title: "Map"),
+          builder: (context, state) => MapPage(),
         ),
       ],
     ),
