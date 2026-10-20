@@ -1,7 +1,7 @@
 // for convert stream to listenable
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 
 class StreamToListenable extends ChangeNotifier {
   late final List<StreamSubscription> subscriptions;
