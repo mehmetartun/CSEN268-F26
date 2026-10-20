@@ -8,6 +8,10 @@
 	<string>Used to capture audio for image picker plugin</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to demonstrate image picker plugin</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Access to the location is needed for the app when open.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Access to the location is needed when in the background.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
