@@ -1,139 +1,167 @@
+## Santa Clara University - CSEN268 Spring 2025
 
-# Lecture 9-3 
+[Table of Contents](/toc.md)
 
-## Google Maps implementation
+### Lecture 9 - Part 3 - Flutter Contacts Implementation
 
 In this part we add the following packages to the project
-    google_maps_flutter
-    geolocator
+    flutter_contacts
 by issuing `flutter pub add <packagename1> <packagename2> ...`
 
-### Getting a Google Maps API Key
+### Setting Permissions
 
-Once you have a project and billing account setup in [Google Cloud](https://cloud.google.com/) you can create an **API Key** to connect to the Google Maps API. In either case for your **iOS**, **Android**, and **Web** apps it may be a good idea to get a separate API Key.
-
-You must also enable the API for each platform!
-
-- For **Android** go to [Google Maps SDK for Android](https://developers.google.com/maps/documentation/android-sdk/get-api-key)
-- For **iOS** go to [Google Maps SDK for iOS](https://developers.google.com/maps/documentation/ios-sdk/get-api-key)
-- For **Web** go to [Google Maps API for Javascript](https://developers.google.com/maps/documentation/javascript/get-api-key)
-
-In each case you should get an API Key for the corresponding platform. Select the corresponding API from the dropdown as shown below:
-
-![API Key Selection](assets/images/MapsApiKeys.png)
-
-### Placing the API Key in the App
-
-#### Android
-
-In the file `android/app/src/main/Androidmanifest.xml` place the following inside `<manifest>` and above `<application>`:
+In the [AndroidManifest.xml](/android/app/src/main/AndroidManifest.xml) we add:
 ```xml
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 ```
-In the file `android/app/src/main/Androidmanifest.xml` place the following inside `<application>` , above  `<activity>`
-
+and in the [Info.plist](/ios/Runner/Info.plist) we add:
 ```xml
-        <meta-data android:name="com.google.android.geo.API_KEY"
-                android:value="<Your Android Google Maps API Key>"/>
+	<key>NSContactsUsageDescription</key>
+	<string>To facilitate sharing with your contacts, we require access to contacts on your device.</string>
 ```
+### Contacts Cubit
 
-#### iOS
+In order to manage the contacts we create a `ContactsCubit` which will house all the methods we need and also the various states that go with the management and view of the contacts.
 
-In the file `ios/Runner/AppDelegate.swift` add the following lines
-```swift
-import GoogleMaps
-...
-    GeneratedPluginRegistrant.register(with: self)
-    GMSServices.provideAPIKey("<Your iOS Google Maps API Key>")
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-```
-
-Also you need to include these permissions in your `ios/Runner/Info.plist` file
-```xml
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Access to the location is needed for the app when open.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Access to the location is needed when in the background.</string>
-```
-
-#### Web
-
-In the file `web/index.html` you need to include your API Key in the `<head>` section.
-```html
-  <script src="https://maps.googleapis.com/maps/api/js?key=<Your Javascript Google Maps API Key>"></script>
-```
-
-### Placing the Google Maps Widget
+Out `ContactsPage` is going to act as the main entry point, spawning the cubit and then incorporating a `BlocBuilder` that returns different views depending on the state. The creation of the cubit also follows a call to the `init()` method of the cubit to fetch contacts and permissions.
 
 ```dart
-GoogleMap(
-        onMapCreated: (GoogleMapController controller){ }, // Callback issued when Map
-        // is created. The controller of the Map is given. We need to
-        // create a reference to this controller to be able to manipulate the map
-        myLocationButtonEnabled: true,
-        myLocationEnabled: true,
-        onCameraMove: (CameraPosition cameraPosition) {
-        }, // Callback when camera is moving
-        onCameraIdle: () async {
-        }, // Callback when camera becomes idle
-        initialCameraPosition: const CameraPosition(
-            target: LatLng(51.3, 0),
-            zoom: 18,
-        ),
-        markers: Set<Marker> markers, // a Set containing Markers to place on the Map
-    );
-```
+class ContactsPage extends StatelessWidget {
+  const ContactsPage({super.key});
 
-To get a handle on the `GoogleMapController`, define a variable `mapController` and set it to the 
-controller returned by the callback. In the same callback one could also set up listeners to position changes
-so that the map is updated automatically. A sample callback on position updates would be:
+  @override
+  Widget build(BuildContext context) {
+    ContactsCubit cubit = ContactsCubit();
+
+    return BlocProvider(
+      create: (context) => cubit..init(),
+      child: BlocBuilder<ContactsCubit, ContactsState>(
+        builder: (context, state) {
+          switch (state) {
+            ...
+          }}))}
+```
+and the associated states to switch between the views is affected by:
 ```dart
-late MapController mapController;
-late StreamSubscription<Position> positionStreamSubscription;
-...
-  void onMapCreated(GoogleMapController controller) {
-    await checkPermission();
-    if (!hasPermission) {
-      await requestPermission();
-      if (!hasPermission) {
-        return;
+          switch (state) {
+            case ContactsPermissionDenied _:
+              return NoPermissionView();
+            case ContactsPermissionFullAccess _:
+              return ContactsView(
+                contacts: state.contacts,
+                readOnly: false,
+                editContact: cubit.editContact,
+              );
+            case ContactsPermissionReadOnly _:
+              return ContactsView(
+                contacts: state.contacts,
+                readOnly: true,
+                editContact: cubit.editContact,
+              );
+            case ContactEdit _:
+              return ContactEditView(
+                contact: state.contact,
+                saveContact: cubit.saveContact,
+              );
+            case WaitingState _:
+              return WaitingView();
+            default:
+              return NoPermissionView();
+```
+The initialization of the cubit follows with the `init()` method which retrieves the permissions and contact list:
+```dart
+  void init() async {
+    if (await FlutterContacts.requestPermission()) {
+      permissionType = PermissionType.full;
+      contacts = await FlutterContacts.getContacts(
+        withProperties: true,
+        withPhoto: true,
+      );
+      emit(ContactsPermissionFullAccess(contacts: contacts));
+      return;
+    } else {
+      if (Platform.isAndroid) {
+        if (await FlutterContacts.requestPermission(readonly: true)) {
+          permissionType = PermissionType.readOnly;
+          contacts = await FlutterContacts.getContacts();
+          emit(ContactsPermissionReadOnly(contacts: contacts));
+          return;
+        }
       }
     }
-    mapController = controller;
-    positionStreamSubscription = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-      accuracy: LocationAccuracy.bestForNavigation,
-      distanceFilter: 0,
-    )).listen((Position position) {
-      mapController.animateCamera(CameraUpdate.newLatLng(
-          LatLng(position.latitude, position.longitude)));
-    });
+    emit(ContactsPermissionDenied());
   }
 ```
 
-Where we also created the following functions
+Looking at each of the views, the `ContactsView` will display a list with either an **edit** button or without depending on whether we are in read only mode or not.
 ```dart
-  late LocationPermission permission;
+        ListView(
+              children:
+                  contacts.map((contact) {
+                    return ListTile(
+                      title: Text(contact.displayName),
+                      trailing:
+                          readOnly
+                              ? null
+                              : IconButton(
+                                icon: Icon(Icons.edit),
+                                onPressed: () {
+                                  editContact(contact);
+                                },
+                              ),
+                    );
+                  }).toList(),
+            ),
+```
 
-  Future<void> checkPermission() async {
-    permission = await Geolocator.checkPermission();
+<!-- <img src="/assets/images/Initial View of Contacts.png" width="300"> -->
+
+Note that the `editContact()` function has to be passed on from the cubit. This is done in the switch statement in the `ContactsPage` widget which has access to the `ContactsCubit`. The view widgets do not have access to the `ContactsCubit`.
+
+The other important view here is the `ContactEditView` which contains a form. This view is a `StatefulWidget` as it contains a `Form`. The `Contact` object is replicated to a local copy (local to the `State` of the `StatefulWidget`) and any changes are modified there. The provided `saveContact()` function is in reality the `saveContact()` method in the `ContactsCubit`. When the `Form` is submitted the `Contact` with modifications is sent to this method.
+
+```dart
+  void initState() {
+    _contact = widget.contact;
   }
 
-  Future<void> requestPermission() async {
-    permission = await Geolocator.requestPermission();
-  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Form(
+        key: formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: InputDecoration(labelText: "First Name"),
+                initialValue: _contact.name.first,
+                onSaved: (val) {
+                  if (val != null) _contact.name.first = val;},
+              ),
+              TextFormField(),
+              TextFormField(),
+              FilledButton(
+                child: Text("Save"),
+                onPressed: () {
+                  if (formKey.currentState?.validate() ?? false) {
+                    formKey.currentState?.save();
+                    widget.saveContact(_contact);
+                  }
+                }
+```
 
-  bool get hasPermission {
-    return ![
-      LocationPermission.denied,
-      LocationPermission.deniedForever,
-      LocationPermission.unableToDetermine
-    ].contains(permission);
+<!-- <img src="/assets/images/Contacts Edit Form.png" width="300"> -->
+
+Inside the `ContactsCubit` the `saveContact` function first emits a `WaitingState` and then updates the contact and subsequently emits a state to view full list of the contacts.
+
+```dart
+  void saveContact(Contact contact) async {
+    emit(WaitingState());
+    await contact.update();
+    emit(ContactsPermissionFullAccess(contacts: contacts));
   }
 ```
-Which checks for location permission and if it's not available or indeterminable, then it doesn't do the subscription. Otherwise it tries to get the permission and if it succeeds, it does do the subscription to 
-location update whicn in turn moves the focus of the map.
 
-
+<!-- <img src="/assets/images/Contacts Edit Recording.gif" width="300"> -->
 
