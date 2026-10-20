@@ -24,12 +24,14 @@ class MainDrawer extends StatelessWidget {
           ListTile(
             title: const Text('Images'),
             onTap: () {
+              context.pop();
               context.goNamed(MyNavigatorRoute.images.name);
             },
           ),
           ListTile(
             title: const Text('Map'),
             onTap: () {
+              context.pop();
               context.goNamed(MyNavigatorRoute.map.name);
             },
           ),
