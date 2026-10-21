@@ -3,7 +3,8 @@
 enum MyNavigatorRoute {
   home("/", "home"),
   images("images", "images"),
-  map("map", "map");
+  map("map", "map"),
+  contacts("contacts", "contacts");
 
   const MyNavigatorRoute(this.path, this.name);
 
