@@ -71,25 +71,28 @@ and the associated states to switch between the views is affected by:
 ```
 The initialization of the cubit follows with the `init()` method which retrieves the permissions and contact list:
 ```dart
-  void init() async {
-    if (await FlutterContacts.requestPermission()) {
-      permissionType = PermissionType.full;
-      contacts = await FlutterContacts.getContacts(
-        withProperties: true,
-        withPhoto: true,
-      );
+ void init() async {
+    permissionStatus = await FlutterContacts.permissions.request(
+      PermissionType.readWrite,
+    );
+    if (permissionStatus == PermissionStatus.granted ||
+        permissionStatus == PermissionStatus.limited) {
+      contacts = await FlutterContacts.getAll();
       emit(ContactsPermissionFullAccess(contacts: contacts));
       return;
-    } else {
-      if (Platform.isAndroid) {
-        if (await FlutterContacts.requestPermission(readonly: true)) {
-          permissionType = PermissionType.readOnly;
-          contacts = await FlutterContacts.getContacts();
-          emit(ContactsPermissionReadOnly(contacts: contacts));
-          return;
-        }
+    }
+    if (permissionStatus == PermissionStatus.denied) {
+      permissionStatus = await FlutterContacts.permissions.request(
+        PermissionType.read,
+      );
+      if (permissionStatus == PermissionStatus.granted ||
+          permissionStatus == PermissionStatus.limited) {
+        contacts = await FlutterContacts.getAll();
+        emit(ContactsPermissionReadOnly(contacts: contacts));
+        return;
       }
     }
+
     emit(ContactsPermissionDenied());
   }
 ```
@@ -124,31 +127,56 @@ The other important view here is the `ContactEditView` which contains a form. Th
 ```dart
   void initState() {
     _contact = widget.contact;
+    // TODO: implement initState
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text("Contacts")),
       body: Form(
         key: formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
+              Text("Edit Contact Below"),
               TextFormField(
                 decoration: InputDecoration(labelText: "First Name"),
-                initialValue: _contact.name.first,
+                initialValue: _contact.name?.first,
                 onSaved: (val) {
-                  if (val != null) _contact.name.first = val;},
+                  if (val != null) {
+                    _contact.copyWith(
+                      name: _contact.name == null
+                          ? Name(first: val)
+                          : _contact.name!.copyWith(first: val),
+                    );
+                  }
+                },
               ),
-              TextFormField(),
-              TextFormField(),
+              TextFormField(
+                decoration: InputDecoration(labelText: "Last Name"),
+                initialValue: _contact.name?.last,
+                onSaved: (val) {
+                  if (val != null) {
+                    _contact.copyWith(
+                      name: _contact.name == null
+                          ? Name(last: val)
+                          : _contact.name!.copyWith(last: val),
+                    );
+                  }
+                },
+              ),
               FilledButton(
                 child: Text("Save"),
                 onPressed: () {
                   if (formKey.currentState?.validate() ?? false) {
                     formKey.currentState?.save();
+                    print(_contact);
                     widget.saveContact(_contact);
-                  }
-                }
+
+}
 ```
 
 <!-- <img src="/assets/images/Contacts Edit Form.png" width="300"> -->
