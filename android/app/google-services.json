@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "1055393658402",
+    "project_id": "csen268-f25",
+    "storage_bucket": "csen268-f25.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055393658402:android:d2a93d55916b5533003c7b",
+        "android_client_info": {
+          "package_name": "com.artun.csen268"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1055393658402-0509cgndjumord8mr9soc1da4kgldavi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.artun.csen268",
+            "certificate_hash": "50537036a64a27f1cf73fcaf0eeebb08a8e7efb0"
+          }
+        },
+        {
+          "client_id": "1055393658402-rhe3r5n18l5sprqtc2ah2b59rkrmpkir.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi6Fp-A9aqZ4u24cQ5VDcL_2_ruILiZIw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1055393658402-rhe3r5n18l5sprqtc2ah2b59rkrmpkir.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1055393658402-t0a0n77u8bjudsqtl0u3jjcnmc7if4d5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.artun.csen268"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055393658402:android:385a3c40b5e0dbd8003c7b",
+        "android_client_info": {
+          "package_name": "com.artun.csen268f26"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1055393658402-rhe3r5n18l5sprqtc2ah2b59rkrmpkir.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi6Fp-A9aqZ4u24cQ5VDcL_2_ruILiZIw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1055393658402-rhe3r5n18l5sprqtc2ah2b59rkrmpkir.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1055393658402-t0a0n77u8bjudsqtl0u3jjcnmc7if4d5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.artun.csen268"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
