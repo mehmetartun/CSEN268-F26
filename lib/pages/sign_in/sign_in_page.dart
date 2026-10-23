@@ -1,32 +1,51 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../blocs/authentication/authentication_bloc.dart';
-import 'views/sign_in_email_password_view.dart';
-import 'views/sign_in_error_view.dart';
-import 'views/sign_in_signed_in_view.dart';
-import 'views/sign_in_waiting_view.dart';
+import '../../navigation/my_navigator_route.dart';
+import 'views/authenticated_view.dart';
+import 'views/email_password_view.dart';
+import 'views/error_view.dart';
+import 'views/loading_view.dart';
 
 class SignInPage extends StatelessWidget {
   const SignInPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    AuthenticationBloc authenticationBloc = BlocProvider.of<AuthenticationBloc>(
-      context,
-    );
-
-    return BlocBuilder<AuthenticationBloc, AuthenticationState>(
+    return BlocConsumer<AuthenticationBloc, AuthenticationState>(
+      listener: (context, state) {
+        if (state is AuthenticationAuthenticated) {
+          context.goNamed(MyNavigatorRoute.home.name);
+        }
+      },
       builder: (context, state) {
         switch (state) {
-          case AuthenticationInitial _:
-            return SignInEmailPasswordView();
           case AuthenticationAuthenticated _:
-            return SignInSignedInView();
+            return AuthenticatedView();
+          case AuthenticationWaiting _:
+            return LoadingView();
           case AuthenticationError _:
-            return SignInErrorView(error: state.errorText);
-          case AuthenticationWaiting():
-            return SignInWaitingView();
+            return ErrorView(
+              error: state.errorText,
+
+              tryAgain: () {
+                BlocProvider.of<AuthenticationBloc>(context)
+                    .add(AuthenticationSignOutEvent());
+              },
+            );
+          case AuthenticationInitial _:
+            return EmailPasswordView(
+              signInWithEmail: ({required email, required password}) {
+                BlocProvider.of<AuthenticationBloc>(context).add(
+                  AuthenticationWithEmailEvent(
+                    email: email,
+                    password: password,
+                  ),
+                );
+              },
+            );
         }
       },
     );

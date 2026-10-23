@@ -5,6 +5,7 @@ import '../pages/database/database_page.dart';
 import '../pages/generic_page.dart';
 import '../pages/image_page.dart';
 import '../pages/map_page.dart';
+import '../pages/sign_in/sign_in_page.dart';
 import 'my_navigator_route.dart';
 
 final GoRouter router = GoRouter(
@@ -34,6 +35,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.database.path,
           name: MyNavigatorRoute.database.name,
           builder: (context, state) => DatabasePage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.signIn.path,
+          name: MyNavigatorRoute.signIn.name,
+          builder: (context, state) => SignInPage(),
         ),
       ],
     ),

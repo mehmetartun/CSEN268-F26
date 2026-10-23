@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../blocs/authentication/authentication_bloc.dart';
 import '../navigation/my_navigator_route.dart';
 
 class MainDrawer extends StatelessWidget {
@@ -16,9 +18,15 @@ class MainDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
             ),
-            child: Text(
-              'Main Drawer',
-              style: Theme.of(context).textTheme.headlineMedium,
+            child: Column(
+              children: [
+                Text(
+                  'Main Drawer',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                if (BlocProvider.of<AuthenticationBloc>(context).user != null)
+                  Text(BlocProvider.of<AuthenticationBloc>(context).user!.uid),
+              ],
             ),
           ),
           ListTile(
@@ -48,6 +56,27 @@ class MainDrawer extends StatelessWidget {
               context.pop();
               context.goNamed(MyNavigatorRoute.database.name);
             },
+          ),
+          ListTile(
+            title: const Text('SignIn'),
+            onTap: () {
+              context.pop();
+              context.goNamed(MyNavigatorRoute.signIn.name);
+            },
+          ),
+
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(20),
+            alignment: Alignment.centerLeft,
+            child: FilledButton(
+              child: Text("Sign out"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                BlocProvider.of<AuthenticationBloc>(context)
+                    .add(AuthenticationSignOutEvent());
+              },
+            ),
           ),
         ],
       ),

@@ -1,28 +1,29 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../blocs/authentication/authentication_bloc.dart';
-
-class SignInEmailPasswordView extends StatefulWidget {
-  const SignInEmailPasswordView({super.key});
+class EmailPasswordView extends StatefulWidget {
+  const EmailPasswordView({super.key, required this.signInWithEmail});
+  final void Function({required String email, required String password})
+  signInWithEmail;
 
   @override
-  State<SignInEmailPasswordView> createState() =>
-      _SignInEmailPasswordViewState();
+  State<EmailPasswordView> createState() => _EmailPasswordViewState();
 }
 
-class _SignInEmailPasswordViewState extends State<SignInEmailPasswordView> {
+class _EmailPasswordViewState extends State<EmailPasswordView> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  TextEditingController emailController = TextEditingController(
+    text: 'john@doe.com',
+  );
+  TextEditingController passwordController = TextEditingController(
+    text: 'topsecret',
+  );
   String? email;
   String? password;
-  late AuthenticationBloc authenticationBloc;
 
   @override
   void initState() {
     // TODO: implement initState
-    authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     super.initState();
   }
 
@@ -37,7 +38,7 @@ class _SignInEmailPasswordViewState extends State<SignInEmailPasswordView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("SignIn Page")),
+      appBar: AppBar(title: Text("Login Page")),
       body: Center(
         child: Form(
           key: formKey,
@@ -45,7 +46,7 @@ class _SignInEmailPasswordViewState extends State<SignInEmailPasswordView> {
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
-                Text("SignIn Please"),
+                Text("Login Please"),
                 TextFormField(
                   controller: emailController,
                   decoration: InputDecoration(label: Text("Email")),
@@ -73,19 +74,14 @@ class _SignInEmailPasswordViewState extends State<SignInEmailPasswordView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 10),
-                Text("Hint: giving value 'password' will cause an error"),
-                SizedBox(height: 10),
                 FilledButton(
                   child: Text("Login"),
                   onPressed: () {
                     if (formKey.currentState?.validate() ?? false) {
                       formKey.currentState?.save();
-                      authenticationBloc.add(
-                        AuthenticationWithEmailEvent(
-                          email: email!,
-                          password: password!,
-                        ),
+                      widget.signInWithEmail(
+                        email: email!,
+                        password: password!,
                       );
                     }
                   },
