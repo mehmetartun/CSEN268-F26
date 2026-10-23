@@ -5,6 +5,7 @@ enum MyNavigatorRoute {
   images("images", "images"),
   map("map", "map"),
   contacts("contacts", "contacts"),
+  signIn("signIn", "signIn"),
   database("database", "database");
 
   const MyNavigatorRoute(this.path, this.name);
