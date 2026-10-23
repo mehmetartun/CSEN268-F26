@@ -8,9 +8,17 @@ class AuthenticationWithEmailEvent extends AuthenticationEvent {
   AuthenticationWithEmailEvent({required this.email, required this.password});
 }
 
+class AuthenticationNewUserEvent extends AuthenticationEvent {
+  final String email;
+  final String password;
+  AuthenticationNewUserEvent({required this.email, required this.password});
+}
+
 class AuthenticationErrorEvent extends AuthenticationEvent {
   final String errorText;
   AuthenticationErrorEvent({required this.errorText});
 }
 
 class AuthenticationSignOutEvent extends AuthenticationEvent {}
+
+class AuthenticationNewUserRequestEvent extends AuthenticationEvent {}

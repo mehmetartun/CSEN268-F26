@@ -8,6 +8,7 @@ import 'views/authenticated_view.dart';
 import 'views/email_password_view.dart';
 import 'views/error_view.dart';
 import 'views/loading_view.dart';
+import 'views/new_user_view.dart';
 
 class SignInPage extends StatelessWidget {
   const SignInPage({super.key});
@@ -15,13 +16,22 @@ class SignInPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthenticationBloc, AuthenticationState>(
-      listener: (context, state) {
+      listener: (context, state) async {
+        await Future.delayed(Duration(seconds: 3), () {});
         if (state is AuthenticationAuthenticated) {
           context.goNamed(MyNavigatorRoute.home.name);
         }
       },
       builder: (context, state) {
         switch (state) {
+          case AuthenticationNewUser _:
+            return NewUserView(
+              newUserWithEmail: ({required email, required password}) {
+                BlocProvider.of<AuthenticationBloc>(context).add(
+                  AuthenticationNewUserEvent(email: email, password: password),
+                );
+              },
+            );
           case AuthenticationAuthenticated _:
             return AuthenticatedView();
           case AuthenticationWaiting _:
@@ -44,6 +54,10 @@ class SignInPage extends StatelessWidget {
                     password: password,
                   ),
                 );
+              },
+              newUserRequest: () {
+                BlocProvider.of<AuthenticationBloc>(context)
+                    .add(AuthenticationNewUserRequestEvent());
               },
             );
         }
