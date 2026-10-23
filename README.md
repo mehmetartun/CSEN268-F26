@@ -1,139 +1,69 @@
 
-# Lecture 9-3 
+# Lecture 10 - Part 1 - Firebase Firestore
 
-## Google Maps implementation
+In this part, we aim to connect to Firestore database
 
-In this part we add the following packages to the project
-    google_maps_flutter
-    geolocator
-by issuing `flutter pub add <packagename1> <packagename2> ...`
+## Packages
 
-### Getting a Google Maps API Key
-
-Once you have a project and billing account setup in [Google Cloud](https://cloud.google.com/) you can create an **API Key** to connect to the Google Maps API. In either case for your **iOS**, **Android**, and **Web** apps it may be a good idea to get a separate API Key.
-
-You must also enable the API for each platform!
-
-- For **Android** go to [Google Maps SDK for Android](https://developers.google.com/maps/documentation/android-sdk/get-api-key)
-- For **iOS** go to [Google Maps SDK for iOS](https://developers.google.com/maps/documentation/ios-sdk/get-api-key)
-- For **Web** go to [Google Maps API for Javascript](https://developers.google.com/maps/documentation/javascript/get-api-key)
-
-In each case you should get an API Key for the corresponding platform. Select the corresponding API from the dropdown as shown below:
-
-![API Key Selection](assets/images/MapsApiKeys.png)
-
-### Placing the API Key in the App
-
-#### Android
-
-In the file `android/app/src/main/Androidmanifest.xml` place the following inside `<manifest>` and above `<application>`:
-```xml
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-```
-In the file `android/app/src/main/Androidmanifest.xml` place the following inside `<application>` , above  `<activity>`
-
-```xml
-        <meta-data android:name="com.google.android.geo.API_KEY"
-                android:value="<Your Android Google Maps API Key>"/>
+We add the following packages:
+```zsh
+flutter pub add cloud_firestore firebase_core firebase_auth
 ```
 
-#### iOS
+## Create a firebase project
 
-In the file `ios/Runner/AppDelegate.swift` add the following lines
-```swift
-import GoogleMaps
-...
-    GeneratedPluginRegistrant.register(with: self)
-    GMSServices.provideAPIKey("<Your iOS Google Maps API Key>")
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+Follow the instructions to create a project in Firebase
+
+## Add iOS, Android, and Web Apps
+
+Follow the instructions to add the the apps with the correct package names etc.
+
+<img src="assets/images/FirebaseApps.png" width="500">
+
+## Flutterfire configuration
+
+```zsh
+firebase login
 ```
-
-Also you need to include these permissions in your `ios/Runner/Info.plist` file
-```xml
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Access to the location is needed for the app when open.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Access to the location is needed when in the background.</string>
+to login to firebase with your Google account. Then run 
+```zsh
+flutterfire configure
 ```
+Here you shall select the project and choose to configure Web, iOS, and Android only.
 
-#### Web
+## FirebaseOptions 
 
-In the file `web/index.html` you need to include your API Key in the `<head>` section.
-```html
-  <script src="https://maps.googleapis.com/maps/api/js?key=<Your Javascript Google Maps API Key>"></script>
-```
-
-### Placing the Google Maps Widget
-
+This creates `firebase_options.dart` file for you. Which is incorporated into the `main.dart` as follows:
 ```dart
-GoogleMap(
-        onMapCreated: (GoogleMapController controller){ }, // Callback issued when Map
-        // is created. The controller of the Map is given. We need to
-        // create a reference to this controller to be able to manipulate the map
-        myLocationButtonEnabled: true,
-        myLocationEnabled: true,
-        onCameraMove: (CameraPosition cameraPosition) {
-        }, // Callback when camera is moving
-        onCameraIdle: () async {
-        }, // Callback when camera becomes idle
-        initialCameraPosition: const CameraPosition(
-            target: LatLng(51.3, 0),
-            zoom: 18,
-        ),
-        markers: Set<Marker> markers, // a Set containing Markers to place on the Map
-    );
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  runApp(const MyApp());
+}
 ```
 
-To get a handle on the `GoogleMapController`, define a variable `mapController` and set it to the 
-controller returned by the callback. In the same callback one could also set up listeners to position changes
-so that the map is updated automatically. A sample callback on position updates would be:
+## Initialize Firestore
+In the firebase console, you initialize Firestore and set `testing` mode to enable **unauthenticated** access.
+
+
+## Accessing Database
+The commands to access the database are incorporated in to the cubit
 ```dart
-late MapController mapController;
-late StreamSubscription<Position> positionStreamSubscription;
-...
-  void onMapCreated(GoogleMapController controller) {
-    await checkPermission();
-    if (!hasPermission) {
-      await requestPermission();
-      if (!hasPermission) {
-        return;
-      }
-    }
-    mapController = controller;
-    positionStreamSubscription = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-      accuracy: LocationAccuracy.bestForNavigation,
-      distanceFilter: 0,
-    )).listen((Position position) {
-      mapController.animateCamera(CameraUpdate.newLatLng(
-          LatLng(position.latitude, position.longitude)));
-    });
+  final db = FirebaseFirestore.instance;
+
+  Future<void> getUsers() async {
+    var qs = await db.collection('users').get();
+    users = qs.docs.map((doc) => User.fromMap(doc.data())).toList();
+  }
+
+  void insertUser(User user) async {
+    emit(DatabaseLoading());
+    // await db.collection('users').add(user.toMap());
+    await db.doc('users/${user.uid}').set(user.toMap());
+    await getUsers();
+    emit(DatabaseLoaded(users: users));
   }
 ```
-
-Where we also created the following functions
-```dart
-  late LocationPermission permission;
-
-  Future<void> checkPermission() async {
-    permission = await Geolocator.checkPermission();
-  }
-
-  Future<void> requestPermission() async {
-    permission = await Geolocator.requestPermission();
-  }
-
-  bool get hasPermission {
-    return ![
-      LocationPermission.denied,
-      LocationPermission.deniedForever,
-      LocationPermission.unableToDetermine
-    ].contains(permission);
-  }
-```
-Which checks for location permission and if it's not available or indeterminable, then it doesn't do the subscription. Otherwise it tries to get the permission and if it succeeds, it does do the subscription to 
-location update whicn in turn moves the focus of the map.
-
 
 

@@ -32,7 +32,6 @@ class _ImagePageState extends State<ImagePage> {
       setState(() {});
       return;
     }
-    ;
 
     dir = await getApplicationDocumentsDirectory();
     files = [];
