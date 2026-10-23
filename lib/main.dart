@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authenticationRepository =
-        OktaAuthenticationRepository() as AuthenticationRepository;
+        FirebaseAuthenticationRepository() as AuthenticationRepository;
     final authenticationBloc = AuthenticationBloc(authenticationRepository);
 
     return MultiRepositoryProvider(

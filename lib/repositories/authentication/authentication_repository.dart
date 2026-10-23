@@ -1,5 +1,7 @@
 import '../../model/user.dart';
 
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+
 abstract class AuthenticationRepository {
   Future<User> signIn({required String email, required String password});
   Future<void> signOut();
@@ -12,16 +14,23 @@ class FirebaseAuthenticationRepository extends AuthenticationRepository {
 
   @override
   Future<User> signIn({required String email, required String password}) async {
-    await someFirebaseSpecificMethod();
-    if (password == "password") {
-      throw Exception("Invalid password");
+    auth.UserCredential userCredential = await auth.FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: password);
+    if (userCredential.user == null) {
+      throw Exception("User is null");
     }
-    return User.createMockUser();
+    return User(
+      email: userCredential.user!.email ?? "",
+      uid: userCredential.user!.uid,
+      firstName: userCredential.user!.displayName ?? "",
+      lastName: userCredential.user!.displayName ?? "",
+      imageUrl: userCredential.user!.photoURL ?? "",
+    );
   }
 
   @override
   Future<void> signOut() async {
-    await Future.delayed(const Duration(seconds: 1), () {});
+    await auth.FirebaseAuth.instance.signOut();
   }
 }
 
