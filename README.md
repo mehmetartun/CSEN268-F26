@@ -66,4 +66,5 @@ The commands to access the database are incorporated in to the cubit
   }
 ```
 
+Here we add a section to explicitly check for permissions to be able to then continue to the map view.
 
