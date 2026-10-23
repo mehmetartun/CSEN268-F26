@@ -13,11 +13,19 @@ class AuthenticationBloc
     on<AuthenticationWithEmailEvent>((event, emit) async {
       await _handleLogin(event, emit);
     });
+
+    on<AuthenticationNewUserEvent>((event, emit) async {
+      await _handleNewUser(event, emit);
+    });
     on<AuthenticationErrorEvent>((event, emit) {
       _handleError(event, emit);
     });
     on<AuthenticationSignOutEvent>((event, emit) async {
       await _handleSignOut(event, emit);
+    });
+
+    on<AuthenticationNewUserRequestEvent>((event, emit) {
+      _handleNewUserRequest(event, emit);
     });
   }
   final AuthenticationRepository authenticationRepository;
@@ -43,11 +51,32 @@ class AuthenticationBloc
         email: event.email,
         password: event.password,
       );
+
       emit(AuthenticationAuthenticated());
       return;
     } catch (e) {
       emit(AuthenticationError(errorText: e.toString()));
       print(e);
     }
+  }
+
+  Future<void> _handleNewUser(event, emit) async {
+    emit(AuthenticationWaiting());
+    try {
+      user = await authenticationRepository.newUser(
+        email: event.email,
+        password: event.password,
+      );
+
+      emit(AuthenticationAuthenticated());
+      return;
+    } catch (e) {
+      emit(AuthenticationError(errorText: e.toString()));
+      print(e);
+    }
+  }
+
+  void _handleNewUserRequest(event, emit) {
+    emit(AuthenticationNewUser());
   }
 }
