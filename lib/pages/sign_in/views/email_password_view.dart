@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EmailPasswordView extends StatefulWidget {
-  const EmailPasswordView({super.key, required this.signInWithEmail});
+  const EmailPasswordView({
+    super.key,
+    required this.signInWithEmail,
+    required this.newUserRequest,
+  });
   final void Function({required String email, required String password})
   signInWithEmail;
+  final void Function() newUserRequest;
 
   @override
   State<EmailPasswordView> createState() => _EmailPasswordViewState();
@@ -38,7 +43,12 @@ class _EmailPasswordViewState extends State<EmailPasswordView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login Page")),
+      appBar: AppBar(
+        title: Text("Login Page"),
+        actions: [
+          FilledButton(child: Text("New"), onPressed: widget.newUserRequest),
+        ],
+      ),
       body: Center(
         child: Form(
           key: formKey,

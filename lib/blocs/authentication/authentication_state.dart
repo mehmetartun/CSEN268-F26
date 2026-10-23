@@ -13,3 +13,5 @@ final class AuthenticationError extends AuthenticationState {
 final class AuthenticationWaiting extends AuthenticationState {}
 
 final class AuthenticationAuthenticated extends AuthenticationState {}
+
+final class AuthenticationNewUser extends AuthenticationState {}
