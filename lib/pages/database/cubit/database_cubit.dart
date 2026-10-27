@@ -31,6 +31,7 @@ class DatabaseCubit extends Cubit<DatabaseState> {
 
   void deleteUser(User user) async {
     await db.doc('users/${user.uid}').delete();
+    users = [];
     await getUsers();
     emit(DatabaseLoaded(users: users));
   }
@@ -43,6 +44,7 @@ class DatabaseCubit extends Cubit<DatabaseState> {
     emit(DatabaseLoading());
     // await db.collection('users').add(user.toMap());
     await db.doc('users/${user.uid}').set(user.toMap());
+    users = [];
     await getUsers();
     emit(DatabaseLoaded(users: users));
   }
