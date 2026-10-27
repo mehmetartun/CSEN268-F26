@@ -52,6 +52,8 @@ dependencies:
   firebase_auth: ^7.0.0
   cloud_firestore: ^7.0.0
   flutter_contacts: ^2.6.0
+  bloc: any
+  meta: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
