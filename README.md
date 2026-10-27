@@ -1,51 +1,50 @@
 
-# Lecture 10 - Part 3 - Firebase Authentication
+# Lecture 11 - Theme
 
-## New User 
+In this lecture we look at implementing a theme.
 
-To sign up new user we use the function `createUserWithEmailAndPassword`
-
-```dart
- Future<void> _handleNewUser(event, emit) async {
-    emit(AuthenticationWaiting());
-    try {
-      user = await authenticationRepository.newUser(
-        email: event.email,
-        password: event.password,
-      );
-
-      emit(AuthenticationAuthenticated());
-      return;
-    } catch (e) {
-      emit(AuthenticationError(errorText: e.toString()));
-      print(e);
-    }
-  }
 ```
-which is handled by the `AuthenticationBloc` via the `_handleNewUser` method that in turn calls the `AuthenticationRepository` method `newUser`.
+flutter pub add google_fonts
+```
+To add support for **Google Fonts**
 
-The `newUser` method in the `AuthenticationRepository` is the actual implementation of the `FirebaseAuth` method `createNewUserWithEmailAndPassword`.
+## Inserting Theme into Material App
+
+The download from Figma is `theme.dart` which can be placed in the `theme` folder:
+
+```zsh
+theme
+├── cubit
+│   ├── theme_cubit.dart
+│   └── theme_state.dart
+├── theme.dart
+└── util.dart
+```
+The cubit will help us switch theme in the app.
+
+The `theme.dart` file contains a class `MaterialTheme` which contains all variations of the theme in terms of **dark** and **light**. The text theme is created with `createTextTheme()` utility.
 
 ```dart
-@override
-  Future<User> newUser({
-    required String email,
-    required String password,
-  }) async {
-    auth.UserCredential userCredential = await auth.FirebaseAuth.instance
-        .createUserWithEmailAndPassword(email: email, password: password);
-    if (userCredential.user == null) {
-      throw Exception("User is null");
-    }
-    return User(
-      email: userCredential.user!.email ?? "",
-      uid: userCredential.user!.uid,
-      firstName: userCredential.user!.displayName ?? "",
-      lastName: userCredential.user!.displayName ?? "",
-      imageUrl: userCredential.user!.photoURL ?? "",
+    MaterialTheme materialTheme = MaterialTheme(
+      createTextTheme(context, 'Roboto', 'Roboto Condensed'),
     );
-  }
 ```
+
+We then populate Material App parameters with the various theme modes.
+
+```dart
+    MaterialApp.router(
+      title: 'CSEN 268 Fall 2025',
+      theme: materialTheme.light(),
+      darkTheme: materialTheme.dark(),
+      highContrastDarkTheme: materialTheme.darkHighContrast(),
+      highContrastTheme: materialTheme.lightHighContrast(),
+      themeMode: ThemeMode.system,
+      debugShowCheckedModeBanner: false,
+      routerConfig: router,
+    ),
+```
+
 
 
 
