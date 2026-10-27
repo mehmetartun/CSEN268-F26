@@ -9,6 +9,14 @@
         android:icon="@mipmap/ic_launcher">
          <meta-data android:name="com.google.android.geo.API_KEY"
                 android:value="AIzaSyC_A1p3t0viwh9-hziCby1Fs1lj7UXuhmA"/>
+        <meta-data
+            android:name="firebase_messaging_installation_id_enabled"
+            android:value="true" />
+
+        <!-- Make sure auto-init is also set to true -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="high_importance_channel" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
