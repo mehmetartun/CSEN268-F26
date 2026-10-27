@@ -1,50 +1,68 @@
 
-# Lecture 11 - Theme
+# Lecture 11-02 - Theme Switching
 
-In this lecture we look at implementing a theme.
-
-```
-flutter pub add google_fonts
-```
-To add support for **Google Fonts**
-
-## Inserting Theme into Material App
-
-The download from Figma is `theme.dart` which can be placed in the `theme` folder:
-
-```zsh
-theme
-├── cubit
-│   ├── theme_cubit.dart
-│   └── theme_state.dart
-├── theme.dart
-└── util.dart
-```
-The cubit will help us switch theme in the app.
-
-The `theme.dart` file contains a class `MaterialTheme` which contains all variations of the theme in terms of **dark** and **light**. The text theme is created with `createTextTheme()` utility.
+To make it possible to swtich the theme we first instantiate the `ThemeCubit` and wrap the `MaterialApp` in a `BlocBuilder<ThemeCubit>` structure:
 
 ```dart
-    MaterialTheme materialTheme = MaterialTheme(
-      createTextTheme(context, 'Roboto', 'Roboto Condensed'),
+  final themeCubit = ThemeCubit();
+  ..
+    return MultiRepositoryProvider(
+      ...
+      child: MultiBlocProvider(
+        providers: [
+          ...
+          BlocProvider(create: (context) => themeCubit),
+        ],
+        child: BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, state) {
+            return MaterialApp.router(
+              title: 'CSEN 268 Fall 2025',
+              theme: materialTheme.light(),
+              darkTheme: materialTheme.dark(),
+              highContrastDarkTheme: materialTheme.darkHighContrast(),
+              highContrastTheme: materialTheme.lightHighContrast(),
+              themeMode: state.themeMode, // Changes the theme mode
+              debugShowCheckedModeBanner: false,
+              routerConfig: router,
+            );
+          },
+        ),
+```
+
+## Brightness Widget
+
+The last thing to do is to create a widget that is able to access the `ThemeCubit` and change the `mode` of the theme. The row of icon buttons are wrapped with a `BlocBuilder` to show the current state of the theme and the `cubit.changeThemeMode()` is called to change the mode.
+
+```dart
+class BrightnessSelector extends StatelessWidget {
+  const BrightnessSelector({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    ThemeCubit cubit = BlocProvider.of<ThemeCubit>(context);
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      builder: (context, state) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            state.themeMode == ThemeMode.light
+                ? IconButton.filled(
+                    icon: const Icon(Icons.light_mode),
+                    onPressed: () {},
+                  )
+                : IconButton.filledTonal(
+                    icon: const Icon(Icons.light_mode),
+                    onPressed: () {
+                      cubit.changeThemeMode(ThemeMode.light);
+                      ...
+                      Navigator.of(context).pop();
+                    },
+                  ),
+              ... 
+          ],
+        );
+      },
     );
+  }
+}
 ```
-
-We then populate Material App parameters with the various theme modes.
-
-```dart
-    MaterialApp.router(
-      title: 'CSEN 268 Fall 2025',
-      theme: materialTheme.light(),
-      darkTheme: materialTheme.dark(),
-      highContrastDarkTheme: materialTheme.darkHighContrast(),
-      highContrastTheme: materialTheme.lightHighContrast(),
-      themeMode: ThemeMode.system,
-      debugShowCheckedModeBanner: false,
-      routerConfig: router,
-    ),
-```
-
-
-
-
