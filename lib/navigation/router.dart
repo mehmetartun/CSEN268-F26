@@ -1,4 +1,5 @@
 import 'package:csen268f26/pages/future_builder_page.dart';
+import 'package:csen268f26/pages/shimmer_future_builder_page.dart';
 import 'package:csen268f26/pages/stream_builder_page.dart';
 import 'package:go_router/go_router.dart';
 
@@ -58,6 +59,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.streamBuilder.path,
           name: MyNavigatorRoute.streamBuilder.name,
           builder: (context, state) => StreamBuilderPage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.shimmer.path,
+          name: MyNavigatorRoute.shimmer.name,
+          builder: (context, state) => ShimmerFutureBuilderPage(),
         ),
       ],
     ),
