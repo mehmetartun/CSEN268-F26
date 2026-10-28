@@ -56,6 +56,7 @@ dependencies:
   meta: any
   firebase_messaging: ^17.0.1
   firebase_app_installations: ^0.5.1
+  firebase_in_app_messaging: ^0.10.1
 
 dev_dependencies:
   flutter_test:
