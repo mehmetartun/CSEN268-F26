@@ -1,3 +1,4 @@
+import 'package:csen268f26/pages/future_builder_page.dart';
 import 'package:go_router/go_router.dart';
 
 import '../pages/alert_page.dart';
@@ -46,6 +47,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.dialogs.path,
           name: MyNavigatorRoute.dialogs.name,
           builder: (context, state) => AlertPage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.futureBuilder.path,
+          name: MyNavigatorRoute.futureBuilder.name,
+          builder: (context, state) => FutureBuilderPage(),
         ),
       ],
     ),

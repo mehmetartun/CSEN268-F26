@@ -8,6 +8,9 @@ enum MyNavigatorRoute {
   signIn("signIn", "signIn"),
   dialogs("dialogs", "dialogs"),
   database("database", "database"),
+  futureBuilder("futureBuilder", "futureBuilder"),
+  streamBuilder("streamBuilder", "streamBuilder"),
+  shimmer("shimmer", "shimmer"),
   messaging("messaging", "messaging");
 
   const MyNavigatorRoute(this.path, this.name);
