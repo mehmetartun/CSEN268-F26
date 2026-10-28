@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../blocs/authentication/authentication_bloc.dart';
 import '../navigation/my_navigator_route.dart';
+import 'brightness_selector.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
@@ -77,6 +78,10 @@ class MainDrawer extends StatelessWidget {
                     .add(AuthenticationSignOutEvent());
               },
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: BrightnessSelector(),
           ),
         ],
       ),
