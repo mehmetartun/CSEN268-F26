@@ -6,7 +6,9 @@ enum MyNavigatorRoute {
   map("map", "map"),
   contacts("contacts", "contacts"),
   signIn("signIn", "signIn"),
-  database("database", "database");
+  dialogs("dialogs", "dialogs"),
+  database("database", "database"),
+  messaging("messaging", "messaging");
 
   const MyNavigatorRoute(this.path, this.name);
 
