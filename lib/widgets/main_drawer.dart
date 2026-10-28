@@ -72,6 +72,27 @@ class MainDrawer extends StatelessWidget {
               context.goNamed(MyNavigatorRoute.dialogs.name);
             },
           ),
+          ListTile(
+            title: const Text('Future Builder'),
+            onTap: () {
+              context.pop();
+              context.goNamed(MyNavigatorRoute.futureBuilder.name);
+            },
+          ),
+          ListTile(
+            title: const Text('Shimmer'),
+            onTap: () {
+              context.pop();
+              context.goNamed(MyNavigatorRoute.shimmer.name);
+            },
+          ),
+          ListTile(
+            title: const Text('Stream Builder'),
+            onTap: () {
+              context.pop();
+              context.goNamed(MyNavigatorRoute.streamBuilder.name);
+            },
+          ),
 
           Container(
             width: double.infinity,
