@@ -8,6 +8,7 @@ import '../pages/contacts/contacts_page.dart';
 import '../pages/database/database_page.dart';
 import '../pages/generic_page.dart';
 import '../pages/image_page.dart';
+import '../pages/in_app_web_view_page.dart';
 import '../pages/map_page.dart';
 import '../pages/sign_in/sign_in_page.dart';
 import '../pages/web_view_page.dart';
@@ -70,6 +71,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.webView.path,
           name: MyNavigatorRoute.webView.name,
           builder: (context, state) => WebViewPage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.inAppWebView.path,
+          name: MyNavigatorRoute.inAppWebView.name,
+          builder: (context, state) => InAppWebViewPage(),
         ),
       ],
     ),
