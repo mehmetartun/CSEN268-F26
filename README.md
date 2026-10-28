@@ -64,5 +64,6 @@ We inject the widget in the `FutureBuilder`:
 
 Finally, we will see the following when the `Future` is loading:
 
-![Shimmer Demo](/assets/gifs/ShimmerDemo.gif)
+<img src="/assets/gifs/ShimmerDemo.gif" width="300" alt="Shimmer Demo">
+<!-- ![Shimmer Demo](/assets/gifs/ShimmerDemo.gif) -->
 
