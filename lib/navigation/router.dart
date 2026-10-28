@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../pages/alert_page.dart';
 import '../pages/contacts/contacts_page.dart';
 import '../pages/database/database_page.dart';
 import '../pages/generic_page.dart';
@@ -40,6 +41,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.signIn.path,
           name: MyNavigatorRoute.signIn.name,
           builder: (context, state) => SignInPage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.dialogs.path,
+          name: MyNavigatorRoute.dialogs.name,
+          builder: (context, state) => AlertPage(),
         ),
       ],
     ),

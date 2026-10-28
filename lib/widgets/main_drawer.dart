@@ -65,6 +65,13 @@ class MainDrawer extends StatelessWidget {
               context.goNamed(MyNavigatorRoute.signIn.name);
             },
           ),
+          ListTile(
+            title: const Text('Dialogs'),
+            onTap: () {
+              context.pop();
+              context.goNamed(MyNavigatorRoute.dialogs.name);
+            },
+          ),
 
           Container(
             width: double.infinity,
