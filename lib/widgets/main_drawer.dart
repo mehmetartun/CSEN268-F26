@@ -93,6 +93,13 @@ class MainDrawer extends StatelessWidget {
               context.goNamed(MyNavigatorRoute.streamBuilder.name);
             },
           ),
+          ListTile(
+            title: const Text('WebView'),
+            onTap: () {
+              context.pop();
+              context.goNamed(MyNavigatorRoute.webView.name);
+            },
+          ),
 
           Container(
             width: double.infinity,

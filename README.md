@@ -1,69 +1,84 @@
-### Lecture 13 - 03 Implementing Future Builder, Shimmer, Stream Builder
+## Lecture 14 - 01 WebView - showing web content in your app
+In this lecture we will explore Flutter WebView
 
-
-### Step 3 - Implement Shimmer
-In the previous step we implemented the `StreamBuilder` to bring the content from the database. Shimmer allows you to display placeholders to prepare the user about the type of data the page is going to receive rather than showing a generic spinner.
-
-#### Add shimmer package
-We start by adding the package
+There are two packages that allow you to connect to Web from inside the Flutter App. We import both packages:
 ```zsh
-flutter pub add shimmer
+flutter pub add webview_flutter in_app_webview_flutter
 ```
-#### Building a widget with Shimmer
-The Future returns mock users as `ListTile` and we simply build our shimmer widget using `Container` widgets.
 
+#### Webview Flutter (developed by Flutter team)
+In [web_view_page.dart](/lib/pages/web_view_page.dart) we implement the Webview as a Stateful widget.
 ```dart
-class ShimmerListWidget extends StatelessWidget {
-  const ShimmerListWidget({super.key});
-
+class _WebViewPageState extends State<WebViewPage> {
+  GlobalKey<FormState> _formKey = GlobalKey();
+  late TextEditingController controller;
+  late WebViewController webViewController;
+  Uri? uri;
+```
+Where we define the `WebViewController` that will be attached to the `WebViewWidget` below that displays  the actual web page.
+```dart
   @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      enabled: true,
-      child: Column(
-        children: List.generate(10, (index) {
-          return Container(
-            height: 50,
-
-            width: double.infinity,
-            margin: EdgeInsets.fromLTRB(20, 10, 20, 0),
-            decoration: ShapeDecoration(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(2)),
-              ),
-              color: Colors.white,
-            ),
-          );
-        }),
-      ),
-    );
+  void initState() {
+    controller = TextEditingController(text: "google.com");
+    webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted);
+    super.initState();
   }
 ```
-#### Using the ShimmerListWidget
-
-We inject the widget in the `FutureBuilder`:
+and we initialized the `WebViewController` with `JavaScriptMode.unrestricted` such that Javascript can be executed within the WebView.
 ```dart
-    FutureBuilder(
-        future: getData(),
-        builder: (BuildContext context, AsyncSnapshot<List<User>> snapshot) {
-        if (snapshot.hasData) {
-            return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: snapshot.data!.map((user) {
-                return UserListTile(user: user);
-            }).toList(),
-            );
-        } else {
-            return ShimmerListWidget();
-        }
-        },
-    ),
+  void processForm() {
+    if (controller.text == null) {
+      return;
+    }
+    if (controller.text.startsWith("https://") ||
+        controller.text.startsWith("http://")) {
+      uri = Uri.tryParse(controller.text);
+    } else {
+      uri = Uri.tryParse("https://${controller.text}");
+    }
+    if (uri != null) {
+      webViewController.loadRequest(uri!);
+    }
+  }
 ```
+This function parses the string in the `TextFormField` to resolve to a web page.
+```dart
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Web View"),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                key: _formKey,
+                child: TextFormField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                      labelText: "Address",
+                      suffix: IconButton(
+                        icon: Icon(Icons.send),
+                        onPressed: () {
+                          processForm();
+                        },
+                      )),
+                ),
+              ),
+            ),
+            Expanded(
+              child: WebViewWidget(
+                controller: webViewController,
+              ),
+            ),
+          ],
+        ));
+  }
+}
+```
+And on the page the `WebViewWidget` needs to be wrapped with a `Expanded` widget in order to specify that it can take any available space within the `Column` but not more. Otherwise as the `Column` will grow as much as necessary, the `WebViewWidget` will try to grow to infinity. `Expanded` bounds this which could be achieved with a `SizedBox` or a `Container`.
 
-Finally, we will see the following when the `Future` is loading:
-
-<img src="/assets/gifs/ShimmerDemo.gif" width="300" alt="Shimmer Demo">
-<!-- ![Shimmer Demo](/assets/gifs/ShimmerDemo.gif) -->
-
+<img src="assets/gifs/FlutterWebViewDemo.gif" alt="Demo of WebView" width="300">
