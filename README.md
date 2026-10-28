@@ -64,5 +64,5 @@ Also important to note is that we reset the value of the `TextFormField` after s
 
 We get the following result:
 
-![StreamBuilder Output](/assets/images/StreamBuilderDemo.gif)
+<img src="/assets/images/StreamBuilderDemo.gif" alt="StreamBuilder Output" width="300" />
 
