@@ -10,6 +10,7 @@ import '../pages/generic_page.dart';
 import '../pages/image_page.dart';
 import '../pages/map_page.dart';
 import '../pages/sign_in/sign_in_page.dart';
+import '../pages/web_view_page.dart';
 import 'my_navigator_route.dart';
 
 final GoRouter router = GoRouter(
@@ -64,6 +65,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.shimmer.path,
           name: MyNavigatorRoute.shimmer.name,
           builder: (context, state) => ShimmerFutureBuilderPage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.webView.path,
+          name: MyNavigatorRoute.webView.name,
+          builder: (context, state) => WebViewPage(),
         ),
       ],
     ),
