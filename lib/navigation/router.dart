@@ -1,4 +1,5 @@
 import 'package:csen268f26/pages/future_builder_page.dart';
+import 'package:csen268f26/pages/stream_builder_page.dart';
 import 'package:go_router/go_router.dart';
 
 import '../pages/alert_page.dart';
@@ -52,6 +53,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.futureBuilder.path,
           name: MyNavigatorRoute.futureBuilder.name,
           builder: (context, state) => FutureBuilderPage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.streamBuilder.path,
+          name: MyNavigatorRoute.streamBuilder.name,
+          builder: (context, state) => StreamBuilderPage(),
         ),
       ],
     ),
