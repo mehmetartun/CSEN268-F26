@@ -12,6 +12,7 @@ enum MyNavigatorRoute {
   streamBuilder("streamBuilder", "streamBuilder"),
   shimmer("shimmer", "shimmer"),
   webView("webView", "webView"),
+  inAppWebView("inAppWebView", "inAppWebView"),
   messaging("messaging", "messaging");
 
   const MyNavigatorRoute(this.path, this.name);
