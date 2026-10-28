@@ -7,6 +7,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+dependencies {
+    // 1. Import the Firebase BoM so Gradle resolves all missing dependency versions automatically
+    implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
+
+    // 2. Your other existing dependencies (if any)
+    // implementation("com.android.support:multidex:2.0.1")
+}
+
 android {
     namespace = "com.artun.csen268f26"
     compileSdk = flutter.compileSdkVersion
