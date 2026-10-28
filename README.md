@@ -53,4 +53,4 @@ If the `snapshot` contains data, then we understand the `Future` has resolved. I
     ),
 ```
 The resulting view on the simulator:
-![Future Builder Demo](/assets/images/FutureBuilder.gif)
+<img src="/assets/images/FutureBuilder.gif" alt="FutureBuilder Output" width="300" />
