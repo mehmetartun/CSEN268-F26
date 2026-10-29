@@ -22,6 +22,27 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"
+        },
+        {
+            "name": "csen268f26-admin",
+            "request": "launch",
+            "type": "dart",
+            "args": [],
+            "program": "lib/main_admin.dart"
+        },
+         {
+            "name": "csen268f26-admin (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/main_admin.dart"
+        },
+        {
+            "name": "csen268f26-admin (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/main_admin.dart"
         }
     ]
 }

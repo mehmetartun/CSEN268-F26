@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "csen268-f25"
-  }
+  },
+  "targets": {
+    "csen268-f25": {
+      "hosting": {
+        "clientApp": [
+          "csen268-f25"
+        ],
+        "adminApp": [
+          "admin-csen268-f25"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
