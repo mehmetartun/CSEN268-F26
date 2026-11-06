@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../pages/alert_page.dart';
 import '../pages/contacts/contacts_page.dart';
 import '../pages/database/database_page.dart';
+import '../pages/functions_demo_page.dart';
 import '../pages/generic_page.dart';
 import '../pages/image_page.dart';
 import '../pages/in_app_web_view_page.dart';
@@ -26,6 +27,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.images.path,
           name: MyNavigatorRoute.images.name,
           builder: (context, state) => ImagePage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.functionsDemo.path,
+          name: MyNavigatorRoute.functionsDemo.name,
+          builder: (context, state) => FunctionsDemoPage(),
         ),
         GoRoute(
           path: MyNavigatorRoute.map.path,

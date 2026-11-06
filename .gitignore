@@ -11,6 +11,7 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+.firebase/
 
 # IntelliJ related
 *.iml
@@ -51,3 +52,4 @@ app.*.map.json
 
 node_modules/
 .agents/
+google_app_engine_service_account.json
