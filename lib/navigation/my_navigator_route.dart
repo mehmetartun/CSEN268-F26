@@ -13,6 +13,7 @@ enum MyNavigatorRoute {
   shimmer("shimmer", "shimmer"),
   webView("webView", "webView"),
   inAppWebView("inAppWebView", "inAppWebView"),
+  functionsDemo("functionsDemo", "functionsDemo"),
   messaging("messaging", "messaging");
 
   const MyNavigatorRoute(this.path, this.name);
