@@ -38,6 +38,13 @@ class MainDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            title: const Text('Image Upload'),
+            onTap: () {
+              context.pop();
+              context.goNamed(MyNavigatorRoute.imageUpload.name);
+            },
+          ),
+          ListTile(
             title: const Text('Functions Demo'),
             onTap: () {
               context.pop();

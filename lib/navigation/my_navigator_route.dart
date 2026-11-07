@@ -14,6 +14,7 @@ enum MyNavigatorRoute {
   webView("webView", "webView"),
   inAppWebView("inAppWebView", "inAppWebView"),
   functionsDemo("functionsDemo", "functionsDemo"),
+  imageUpload("imageUpload", "imageUpload"),
   messaging("messaging", "messaging");
 
   const MyNavigatorRoute(this.path, this.name);
