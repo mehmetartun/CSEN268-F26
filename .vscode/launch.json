@@ -9,7 +9,7 @@
             "name": "csen268f26",
             "request": "launch",
             "type": "dart",
-            "args": []
+            "args": ["--web-port", "5500"]
         },
         {
             "name": "csen268f26 (profile mode)",
