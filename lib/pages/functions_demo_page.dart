@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:material_ui/material_ui.dart';
 
+enum CarBrands { bmw, mercedes, toyota, chevy }
+
 class FunctionsDemoPage extends StatefulWidget {
   const FunctionsDemoPage({super.key});
 
@@ -29,8 +31,9 @@ class _FunctionsDemoPageState extends State<FunctionsDemoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Functions Demo")),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             FilledButton(
               child: Text("Hello World"),
@@ -66,12 +69,12 @@ class _FunctionsDemoPageState extends State<FunctionsDemoPage> {
               },
             ),
             FilledButton(
-              child: Text("Do CollectionGroupQuery"),
+              child: Text("Do CollectionGroupQuery (toyota)"),
               onPressed: () async {
                 try {
                   var res = await FirebaseFirestore.instance
                       .collectionGroup('cars')
-                      .where('model', isEqualTo: 'Toyota')
+                      .where('model', isEqualTo: 'toyota')
                       .get();
 
                   print(res.docs.length);
@@ -79,6 +82,68 @@ class _FunctionsDemoPageState extends State<FunctionsDemoPage> {
                   print(e);
                 }
               },
+            ),
+            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('function_test')
+                  .snapshots(),
+              builder:
+                  (
+                    context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot,
+                  ) {
+                    if (snapshot.hasData) {
+                      return SizedBox(
+                        width: 400,
+                        child: ListView(
+                          shrinkWrap: true,
+                          children:
+                              snapshot.data?.docs.map((doc) {
+                                return ListTile(
+                                  title: Text(doc.data()['firstName'] ?? "N/A"),
+                                  subtitle: Text(doc.id),
+                                  trailing: IconButton(
+                                    icon: Icon(Icons.directions_car),
+                                    onPressed: () async {
+                                      String?
+                                      carName = await showDialog<String>(
+                                        context: context,
+                                        builder: (context) {
+                                          return SimpleDialog(
+                                            title: Text(
+                                              "Select Car Brand To Add to User",
+                                            ),
+                                            children: CarBrands.values.map((
+                                              value,
+                                            ) {
+                                              return SimpleDialogOption(
+                                                child: Text(value.name),
+                                                onPressed: () {
+                                                  Navigator.of(context)
+                                                      .pop(value.name);
+                                                },
+                                              );
+                                            }).toList(),
+                                          );
+                                        },
+                                      );
+                                      if (carName != null) {
+                                        await FirebaseFirestore.instance
+                                            .collection('function_test')
+                                            .doc(doc.id)
+                                            .collection('cars')
+                                            .add({'model': carName});
+                                      }
+                                    },
+                                  ),
+                                );
+                              }).toList() ??
+                              [],
+                        ),
+                      );
+                    }
+                    return CircularProgressIndicator();
+                  },
             ),
           ],
         ),
