@@ -47,6 +47,7 @@ class _FunctionsDemoPageState extends State<FunctionsDemoPage> {
                   'map': {
                     'firstName': 'John',
                     'lastName': 'Doe',
+                    'class': 'CSEN F26',
                     'today': 'nice weather',
                   },
                 });
