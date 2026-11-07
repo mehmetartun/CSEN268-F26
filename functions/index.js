@@ -11,6 +11,7 @@ const { setGlobalOptions } = require("firebase-functions");
 const { onCall, onRequest } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app")
 const { getFirestore } = require("firebase-admin/firestore")
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 
 const logger = require("firebase-functions/logger");
 
@@ -48,4 +49,13 @@ exports.getData = onCall(async (request) => {
     var path = request.data['path'];
     var result = await getFirestore().doc(path).get();
     return { 'data': result.data() };
+});
+
+exports.onUserCreated = onDocumentCreated("/function_test/{userId}", async (event) => {
+    await getFirestore().collection('log_test').add(
+        {
+            'userId': event.data.params.userId,
+            'createTime': event.data.createTime,
+        }
+    )
 });
