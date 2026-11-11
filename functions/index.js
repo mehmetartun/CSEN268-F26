@@ -54,7 +54,7 @@ exports.getData = onCall(async (request) => {
 exports.onUserCreated = onDocumentCreated("/function_test/{userId}", async (event) => {
     await getFirestore().collection('log_test').add(
         {
-            'userId': event.data.params.userId,
+            'userId': event.params.userId,
             'createTime': event.data.createTime,
         }
     )

@@ -69,12 +69,12 @@ class _FunctionsDemoPageState extends State<FunctionsDemoPage> {
               },
             ),
             FilledButton(
-              child: Text("Do CollectionGroupQuery (toyota)"),
+              child: Text("Do CollectionGroupQuery (mercedes)"),
               onPressed: () async {
                 try {
                   var res = await FirebaseFirestore.instance
                       .collectionGroup('cars')
-                      .where('model', isEqualTo: 'toyota')
+                      .where('model', isEqualTo: 'mercedes')
                       .get();
 
                   print(res.docs.length);
