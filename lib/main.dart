@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
     final authenticationRepository =
         FirebaseAuthenticationRepository() as AuthenticationRepository;
     final authenticationBloc = AuthenticationBloc(authenticationRepository);
-    final themeCubit = ThemeCubit();
+    final themeCubit = ThemeCubit()..init();
 
     MaterialTheme materialTheme = MaterialTheme(
       createTextTheme(context, 'Roboto', 'Roboto Serif'),
