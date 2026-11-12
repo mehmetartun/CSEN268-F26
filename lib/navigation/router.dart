@@ -10,6 +10,7 @@ import '../pages/functions_demo_page.dart';
 import '../pages/generic_page.dart';
 import '../pages/image_page.dart';
 import '../pages/image_upload_page.dart';
+import '../pages/local_database_page.dart';
 import '../pages/map_page.dart';
 import '../pages/sign_in/sign_in_page.dart';
 import '../pages/web_view_page.dart';
@@ -82,6 +83,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.webView.path,
           name: MyNavigatorRoute.webView.name,
           builder: (context, state) => WebViewPage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.localdb.path,
+          name: MyNavigatorRoute.localdb.name,
+          builder: (context, state) => LocalDatabasePage(),
         ),
       ],
     ),
