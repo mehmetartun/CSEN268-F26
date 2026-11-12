@@ -64,6 +64,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   void init() async {
+    bool supported = await messaging.isSupported();
+    print("Messaging Supported: $supported");
     settings = await messaging.requestPermission(
       alert: true,
       announcement: false,

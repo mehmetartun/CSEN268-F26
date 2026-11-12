@@ -53,14 +53,14 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
   }
 
   void uploadImage() async {
+    setState(() {
+      _uploadInProgress = true;
+    });
     if (_docRef != null && _imagePath != null) {
       String imageName =
           "${p.basenameWithoutExtension(_imagePath!)}_${DateTime.now().microsecondsSinceEpoch}.${p.extension(_imagePath!)}";
       _storagePath = "users/${_docRef?.id}/images/$imageName";
 
-      setState(() {
-        _uploadInProgress = true;
-      });
       _downloadUrl = await SaveImage.uploadImageToStorage(
         file: _xfile!,
         storageReference: storage.ref(_storagePath),
