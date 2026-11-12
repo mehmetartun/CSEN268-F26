@@ -1,95 +1,61 @@
-# Lecture 16 - 2 SQFLite Local Database
+# Lecture 16 - 3 Cloud Storage Triggers
 
-We start by adding the package `sqflite` to our `pubspec.yaml`:
-```zsh
-flutter pub add sqflite
+We will do an example where we create a base64 string from an image uploaded to cloud storage and save it to firestore database.
+
+## Packages 
+
+We need `sharp` and `path` packages. To do that we use `npm install sharp path`.
+
+In the `index.js` file we import the necessary objects:
+```javascript
+const { getStorage } = require("firebase-admin/storage");
+const { onObjectFinalized } = require("firebase-functions/storage");
+const path = require("path");
+const sharp = require("sharp");
 ```
 
-## Test database
+## Trigger for Cloud Storage
 
-To demonstrate the usage of the `sqflite` database we create a `users` table where we save and retrieve `User` objects with the definition of the `User` model:
-```dart
-class User {
-  final String firstName;
-  final String lastName;
-  final String email;
-  final String imageUrl;
-  final String uid;
-  ...
-}
+The trigger is captured via the `onObjectFinalized` function. The `event` object carries information about the new file created in storage.
+
+```javascript
+exports.onImageUploaded = onObjectFinalized(async (event) => {
+    const fileBucket = event.data.bucket;
+    const filePath = event.data.name;
+    const contentType = event.data.contentType;
+    const fileName = path.basename(filePath);
+...
 ```
 
-The `LocalDatabasePage` stateful widget is where we demonstrate basic database functionality.
+We then determine if this is an image and resize the image and create a `base64` string out of that.
+```javascript
+if (contentType.startsWith('image/')) {
+        const bucket = getStorage().bucket(fileBucket);
+        const downloadResponse = await bucket.file(filePath).download();
+        const imageBuffer = downloadResponse[0];
 
-## Creating the database
-In the `initState()` we get a handle on the database. It also includes a mechanism to create the tables within the database on first use but not on subsequent uses:
-```dart
- @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    initDatabase();
-  }
+        // Create a thumbnail from the image buffer
+        const thumbnailBuffer = await sharp(imageBuffer).resize({
+            width: 100,
+            height: 100,
+            withoutEnlargement: true,
+        }).toBuffer();
 
-  Future<void> initDatabase() async {
-    database = await sqflite.openDatabase(
-      p.join(await sqflite.getDatabasesPath(), "user_database.db"),
-      onCreate: (db, version) {
-        return db.execute(
-          'CREATE TABLE users(uid TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, imageUrl TEXT)',
-        );
-      },
-      version: 1,
-    );
-    updateUsers();
-  }
+        // Convert the thumbnail buffer to a base64 string
+        const thumbnailBase64 = thumbnailBuffer.toString('base64');
+        ...
 ```
 
-Note that we don't turn our `initState` into an `async` function. Instead we call `initiDatabase()` **unawaited**. Also, as `uid` is unique, we can ensure that the selection of `uid` as **primary key** will  not cause us problems.
-
-## Getting initial data
-To retrieve initial data we call `updateUsers()`.
-```dart
-  Future<void> updateUsers() async {
-    var val = await database.query("users");
-    users = val.map((e) => User.fromMap(e)).toList();
-    setState(() {});
-  }
-```
-
-## Adding data
-In the button on the page we add the insert functionality:
-```dart
-  FilledButton(
-    child: Text("Insert"),
-    onPressed: () async {
-      await database.insert("users", User.createMockUser().toMap());
-      await updateUsers();
-    },
-  ),
-```
-
-## Deleting Data
-As we display the user as a `UserListTile`, the `trailing` widget is a **delete** button as seen in the user list insertion into the column:
-```dart
-    ...users
-            .map(
-              (e) => UserListTile(
-                user: e,
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () async {
-                    await deleteUser(e.uid);
-                    await updateUsers();
-                  },
-                ),
-              ),
-            )
-            .toList(),
-```
-where we call the `deleteUser()` method
-```dart
-  Future<void> deleteUser(String uid) async {
-    await database.delete("users", where: "uid = ?", whereArgs: [uid]);
+Ultimately we save this `base64` string to firestore.
+```javascript
+ try {
+      await getFirestore().collection('images').add({
+          fileName: fileName,
+          thumbnailBase64: thumbnailBase64,
+          createdAt: new Date(),
+      });
+      logger.info(`Successfully created and stored thumbnail for ${fileName}`);
+  } catch (error) {
+      logger.error(`Error storing thumbnail for ${fileName}:`, error);
   }
 ```

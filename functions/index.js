@@ -15,6 +15,13 @@ const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 
 const logger = require("firebase-functions/logger");
 
+const { getStorage } = require("firebase-admin/storage");
+const { onObjectFinalized } = require("firebase-functions/storage");
+const path = require("path");
+const sharp = require("sharp");
+const fs = require("fs");
+const os = require("os");
+
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
 // traffic spikes by instead downgrading performance. This limit is a
@@ -58,4 +65,40 @@ exports.onUserCreated = onDocumentCreated("/function_test/{userId}", async (even
             'createTime': event.data.createTime,
         }
     )
+});
+
+exports.onImageUploaded = onObjectFinalized(async (event) => {
+    const fileBucket = event.data.bucket;
+    const filePath = event.data.name;
+    const contentType = event.data.contentType;
+    const fileName = path.basename(filePath);
+
+
+    if (contentType.startsWith('image/')) {
+        const bucket = getStorage().bucket(fileBucket);
+        const downloadResponse = await bucket.file(filePath).download();
+        const imageBuffer = downloadResponse[0];
+
+        // Create a thumbnail from the image buffer
+        const thumbnailBuffer = await sharp(imageBuffer).resize({
+            width: 100,
+            height: 100,
+            withoutEnlargement: true,
+        }).toBuffer();
+
+        // Convert the thumbnail buffer to a base64 string
+        const thumbnailBase64 = thumbnailBuffer.toString('base64');
+
+        // Save the base64 string to Firestore
+        try {
+            await getFirestore().collection('images').add({
+                fileName: fileName,
+                thumbnailBase64: thumbnailBase64,
+                createdAt: new Date(),
+            });
+            logger.info(`Successfully created and stored thumbnail for ${fileName}`);
+        } catch (error) {
+            logger.error(`Error storing thumbnail for ${fileName}:`, error);
+        }
+    }
 });
