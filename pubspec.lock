@@ -193,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.2"
+  file:
+    dependency: transitive
+    description:
+      name: file
+      sha256: a3b4f84adafef897088c160faf7dfffb7696046cb13ae90b508c2cbc95d3b8d4
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.1"
   file_saver:
     dependency: "direct main"
     description:
@@ -398,70 +406,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.0"
-  flutter_inappwebview_android_fx:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_android_fx
-      sha256: "061d33d1f65faceb3ec37b87e08c979294b6ff0c8e5ab98344f8b1a40801a9e3"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
-  flutter_inappwebview_internal_annotations:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_internal_annotations
-      sha256: e30fba942e3debea7b7e6cdd4f0f59ce89dd403a9865193e3221293b6d1544c6
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0"
-  flutter_inappwebview_ios_fx:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_ios_fx
-      sha256: "41990996e4a27fc25595fd56df5aea46abe70b1ca4496f346e3f19547e400160"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
-  flutter_inappwebview_linux_fx:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_linux_fx
-      sha256: "5da6f472579475c7000b441df8e6309e9914c78a8d6872fe16dbd9bbf2784ebb"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0"
-  flutter_inappwebview_macos_fx:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_macos_fx
-      sha256: "200ccdd3edb30b7a403f7fd4c209d648fc5293df11060d6af95044ba2e251a1a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
-  flutter_inappwebview_platform_interface_fx:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_platform_interface_fx
-      sha256: da2615a1f88710ac1728137bfeeeeb26223085f143fb37dac69859b194aa55e9
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.0"
-  flutter_inappwebview_web_fx:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_web_fx
-      sha256: f3cd22b00a83c32ea7b0fbfe343e5d849abb18695e4cd2ecdf72b750c2dfe2a6
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
-  flutter_inappwebview_windows_fx:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_windows_fx
-      sha256: "00f615504fc33907be98117ae310d4106944c159efc22c3caabc35280a807eb9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.0"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -741,14 +685,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
-  in_app_webview_flutter:
-    dependency: "direct main"
-    description:
-      name: in_app_webview_flutter
-      sha256: b7869949ab998d94465041a7b78dea6afa7fa9f7caebb0c8d10dac51cebf5ce7
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   intl:
     dependency: transitive
     description:
@@ -1021,6 +957,62 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  shared_preferences:
+    dependency: "direct main"
+    description:
+      name: shared_preferences
+      sha256: "1e85e0dccf5b4a016077fea7dfbb4a7cb39c759ac1596fcf60c06deadb7da91f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.6"
+  shared_preferences_android:
+    dependency: transitive
+    description:
+      name: shared_preferences_android
+      sha256: "137dedccacb394b8f470d6c9b435ffc3d33faaa6ce2949c4f54a61007d64396d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.5"
+  shared_preferences_foundation:
+    dependency: transitive
+    description:
+      name: shared_preferences_foundation
+      sha256: "89435cb71ecb1ad1bf29ef73a381f871a06f433d4182b7e2ba7243b02b2c544b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.2"
+  shared_preferences_linux:
+    dependency: transitive
+    description:
+      name: shared_preferences_linux
+      sha256: "580abfd40f415611503cae30adf626e6656dfb2f0cee8f465ece7b6defb40f2f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.1"
+  shared_preferences_platform_interface:
+    dependency: transitive
+    description:
+      name: shared_preferences_platform_interface
+      sha256: "649dc798a33931919ea356c4305c2d1f81619ea6e92244070b520187b5140ef9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.2"
+  shared_preferences_web:
+    dependency: transitive
+    description:
+      name: shared_preferences_web
+      sha256: c49bd060261c9a3f0ff445892695d6212ff603ef3115edbb448509d407600019
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.3"
+  shared_preferences_windows:
+    dependency: transitive
+    description:
+      name: shared_preferences_windows
+      sha256: "94ef0f72b2d71bc3e700e025db3710911bd51a71cefb65cc609dd0d9a982e3c1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.1"
   shimmer:
     dependency: "direct main"
     description:

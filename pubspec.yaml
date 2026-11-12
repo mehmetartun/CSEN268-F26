@@ -59,9 +59,10 @@ dependencies:
   firebase_in_app_messaging: ^0.10.1
   shimmer: ^4.0.0
   webview_flutter: ^4.14.1
-  in_app_webview_flutter: ^1.1.0
+  # in_app_webview_flutter: ^1.1.0
   cloud_functions: ^7.0.1
   firebase_storage: ^14.0.1
+  shared_preferences: ^2.5.6
 
 dev_dependencies:
   flutter_test:

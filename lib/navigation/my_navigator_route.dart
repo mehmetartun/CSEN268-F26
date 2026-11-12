@@ -12,7 +12,6 @@ enum MyNavigatorRoute {
   streamBuilder("streamBuilder", "streamBuilder"),
   shimmer("shimmer", "shimmer"),
   webView("webView", "webView"),
-  inAppWebView("inAppWebView", "inAppWebView"),
   functionsDemo("functionsDemo", "functionsDemo"),
   imageUpload("imageUpload", "imageUpload"),
   messaging("messaging", "messaging");
