@@ -94,6 +94,13 @@ class MainDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            title: const Text('Local DB'),
+            onTap: () {
+              context.pop();
+              context.goNamed(MyNavigatorRoute.localdb.name);
+            },
+          ),
+          ListTile(
             title: const Text('Shimmer'),
             onTap: () {
               context.pop();
