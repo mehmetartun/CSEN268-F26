@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../authentication/authentication_bloc.dart';
+
 part 'notifications_event.dart';
 part 'notifications_state.dart';
 
@@ -21,7 +23,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 enum NotificationType { onMessage, onBackgroundMessage, onMessageOpenedApp }
 
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
-  NotificationsBloc() : super(NotificationsInitial()) {
+  NotificationsBloc({required this.authenticationBloc})
+    : super(NotificationsInitial()) {
     on<NotificationsEvent>((event, emit) {
       // TODO: implement event handler
     });
@@ -52,6 +55,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
   String? firebaseInstallationID;
   NotificationSettings? settings;
+  final AuthenticationBloc authenticationBloc;
 
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
@@ -60,7 +64,11 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   StreamSubscription<RemoteMessage>? messageOpenedAppSubscription;
 
   void onInstallationID() async {
-    print("FID: $firebaseInstallationID");
+    authenticationBloc.add(
+      AuthenticationFirebaseInstallationIdReceived(
+        fid: firebaseInstallationID!,
+      ),
+    );
   }
 
   void init() async {

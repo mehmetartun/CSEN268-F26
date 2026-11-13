@@ -10,9 +10,10 @@
 const { setGlobalOptions } = require("firebase-functions");
 const { onCall, onRequest } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app")
-const { getFirestore } = require("firebase-admin/firestore")
+const { getFirestore, Timestamp } = require("firebase-admin/firestore")
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { beforeUserCreated, beforeUserSignedIn } = require("firebase-functions/v2/identity");
+const { getMessaging } = require("firebase-admin/messaging");
 
 const logger = require("firebase-functions/logger");
 
@@ -127,3 +128,101 @@ exports.updateUser = beforeUserSignedIn(async (event) => {
     });
 });
 
+exports.updateUserFid = onCall(async (request) => {
+    if (!request.data.uid || !request.data.fid) {
+        return { 'message': 'Invalid request' };
+    }
+    const uid = request.data.uid;
+    const fid = request.data.fid;
+    const action = request.data.action;
+    const db = getFirestore();
+    const userRef = db.doc(`users/${uid}`);
+    const qs = await userRef.get();
+    var fids = qs.data().fids;
+    if (!fids) {
+        fids = [];
+    }
+    if (action == 'delete') {
+        fids = fids.filter(item => item !== fid);
+    } else if (action == 'add') {
+        if (!fids.includes(fid)) {
+            fids.push(fid);
+        }
+    }
+    await userRef.update({
+        fids: fids,
+    });
+    return { 'message': 'Success' };
+});
+
+
+exports.sendMessageTest = onRequest(async (request, response) => {
+    const email = request.query.email;
+    const db = getFirestore();
+    const userRef = db.collection('users').where('email', '==', email);
+    const qs = await userRef.get();
+    if (qs.empty) {
+        response.status(404).send('User not found');
+        return;
+    }
+    const user = qs.docs[0].data();
+    const fids = user.fids;
+    if (!fids || fids.length === 0) {
+        response.status(404).send('No FID Found');
+        return;
+    }
+    var messages = [];
+    fids.forEach(fid => {
+        console.log({
+            fid: fid,
+
+            notification: {
+                title: 'Test Notification via FID',
+                body: 'Sent from Node.js using Firebase Installation ID!',
+            },
+
+            data: {
+                click_action: 'FLUTTER_NOTIFICATION_CLICK',
+                screen: '/profile',
+                timestamp: new Date().toISOString(),
+            },
+
+            webpush: {
+                notification: {
+                    icon: '/icons/Icon-192.png',
+                },
+                fcmOptions: {
+                    link: 'http://localhost:58503/',
+                },
+            },
+        });
+        messages.push(
+          {
+            fid: fid,
+
+            notification: {
+                title: 'Test Notification via FID',
+                body: 'Sent from Node.js using Firebase Installation ID!',
+            },
+
+            data: {
+                click_action: 'FLUTTER_NOTIFICATION_CLICK',
+                screen: '/profile',
+                timestamp: new Date().toISOString(),
+            },
+
+            webpush: {
+                notification: {
+                    icon: '/icons/Icon-192.png',
+                },
+                fcmOptions: {
+                    link: 'http://localhost:58503/',
+                },
+            },
+        } 
+        );
+        // messages.push({ 'fid': fid, 'notification': { 'title': 'Test', 'body': message } });
+    });
+    await getMessaging().sendEach(messages);
+    response.send('Success');
+})

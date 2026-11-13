@@ -9,7 +9,7 @@ initializeApp({
   credential: cert(serviceAccount),
 });
 
-const targetFID = 'eELmAl5qgcEgSCNHr5Rm5X';
+const targetFID = 'cDtfaQi7T2KhZxdxM-8Pfn';
 
 // 2. Construct payload with the 'fid' field
 const message = {

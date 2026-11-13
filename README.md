@@ -60,32 +60,52 @@ We can use this to update user details everytime the user is signed in (for exam
 In your **Firebase** console, you need to go to **Authentication** and add these blocking functions in the shown area:
 <img src="assets/images/BlockingFunctions.png" width="600">
 
-## Recording and Updating the user token
-We use this function to change the tokens of the user, when he signs in and also when he signs out. These are called from `AuthenticationBloc` user sign in, sign out handlers.
+## Recording and Updating the Firebase Installation ID
+We use this function to change the Firebase Intallation ID of the user, when he signs in and also when he signs out. These are called from `AuthenticationBloc` user sign in, sign out, and new user handlers.
+
+The `firebaseInstallationID` is stored in the `AuthenticationBloc`. It's registered there with the event:
+```dart
+ on<AuthenticationFirebaseInstallationIdReceived>((event, emit) {
+      firebaseInstallationID = event.fid;
+    });
+```
+which is added from `NotificationBloc`:
+```dart
+  void onInstallationID() async {
+    authenticationBloc.add(
+      AuthenticationFirebaseInstallationIdReceived(
+        fid: firebaseInstallationID!,
+      ),
+    );
+  }
+```
+
+In the cloud functions we have the function to update the data in the Firestore database:
+
 ```javascript
-exports.updateUserToken = onCall(async (request) => {
-    if (!request.data.uid || !request.data.fcmToken) {
+exports.updateUserFid = onCall(async (request) => {
+    if (!request.data.uid || !request.data.fid) {
         return { 'message': 'Invalid request' };
     }
     const uid = request.data.uid;
-    const fcmToken = request.data.fcmToken;
+    const fid = request.data.fid;
     const action = request.data.action;
     const db = getFirestore();
     const userRef = db.doc(`users/${uid}`);
     const qs = await userRef.get();
-    var fcmTokens = qs.data().fcmTokens;
-    if (!fcmTokens) {
-        fcmTokens = [];
+    var fids = qs.data().fids;
+    if (!fids) {
+        fids = [];
     }
     if (action == 'delete') {
-        fcmTokens = fcmTokens.filter(token => token !== fcmToken);
+        fids = fids.filter(item => item !== fid);
     } else if (action == 'add') {
-        if (!fcmTokens.includes(fcmToken)) {
-            fcmTokens.push(fcmToken);
+        if (!fids.includes(fid)) {
+            fids.push(fid);
         }
     }
     await userRef.update({
-        fcmTokens: fcmTokens,
+        fids: fids,
     });
     return { 'message': 'Success' };
 });
@@ -95,23 +115,22 @@ Calling from `AuthenticationBloc` example for sign out. Similar logic for signin
 ```dart
   Future<void> _handleSignOut(event, emit) async {
     emit(AuthenticationWaiting());
-    await FirebaseFunctions.instance.httpsCallable('updateUserToken').call({
+    user = null;
+    FirebaseFunctions.instance.httpsCallable('updateUserFid').call({
       'uid': user?.uid,
-      'fcmToken': await FirebaseMessaging.instance.getToken() ?? '',
+      'fid': firebaseInstallationID,
       'action': 'delete',
     });
-    user = null;
     await authenticationRepository.signOut();
     emit(AuthenticationInitial());
   }
-  ```
+```
 
-  ## Testing the messaging functionality
-  In order to test the messaging functionality we create a small `http` function:
-  ```javascript
-  exports.sendMessageTest = onRequest(async (request, response) => {
+## Testing the messaging functionality
+In order to test the messaging functionality we create a small `http` function:
+```javascript
+exports.sendMessageTest = onRequest(async (request, response) => {
     const email = request.query.email;
-    const message = request.query.message;
     const db = getFirestore();
     const userRef = db.collection('users').where('email', '==', email);
     const qs = await userRef.get();
@@ -120,14 +139,62 @@ Calling from `AuthenticationBloc` example for sign out. Similar logic for signin
         return;
     }
     const user = qs.docs[0].data();
-    const fcmTokens = user.fcmTokens;
-    if (!fcmTokens || fcmTokens.length === 0) {
-        response.status(404).send('No Token Found');
+    const fids = user.fids;
+    if (!fids || fids.length === 0) {
+        response.status(404).send('No FID Found');
         return;
     }
     var messages = [];
-    fcmTokens.forEach(token => {
-        messages.push({ 'token': token, 'notification': { 'title': 'Test', 'body': message } });
+    fids.forEach(fid => {
+        console.log({
+            fid: fid,
+
+            notification: {
+                title: 'Test Notification via FID',
+                body: 'Sent from Node.js using Firebase Installation ID!',
+            },
+
+            data: {
+                click_action: 'FLUTTER_NOTIFICATION_CLICK',
+                screen: '/profile',
+                timestamp: new Date().toISOString(),
+            },
+
+            webpush: {
+                notification: {
+                    icon: '/icons/Icon-192.png',
+                },
+                fcmOptions: {
+                    link: 'http://localhost:58503/',
+                },
+            },
+        });
+        messages.push(
+          {
+            fid: fid,
+
+            notification: {
+                title: 'Test Notification via FID',
+                body: 'Sent from Node.js using Firebase Installation ID!',
+            },
+
+            data: {
+                click_action: 'FLUTTER_NOTIFICATION_CLICK',
+                screen: '/profile',
+                timestamp: new Date().toISOString(),
+            },
+
+            webpush: {
+                notification: {
+                    icon: '/icons/Icon-192.png',
+                },
+                fcmOptions: {
+                    link: 'http://localhost:58503/',
+                },
+            },
+        } 
+        );
+        // messages.push({ 'fid': fid, 'notification': { 'title': 'Test', 'body': message } });
     });
     await getMessaging().sendEach(messages);
     response.send('Success');
@@ -139,47 +206,3 @@ This function can be called from browser and the user with email, if found, shal
 https://us-central1-csen268-f25.cloudfunctions.net/sendMessageTest?email=mehmet@artun.com&message=HelloWorld
 ```
 
-## Viewing the messages in the app
-Having defined the `onMessage` in `main.dart`, we will receive a console log:
-```dart
-FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-print('Handling a foreground message: ${message.messageId}');
-print('Message data: ${message.data}');
-print('Message notification: ${message.notification?.title}');
-print('Message notification: ${message.notification?.body}');
-// Do whatever you need to do with this message
-});
-```
-
-But also within the `NotificationsBloc` we have a similar subscription 
-```dart
-      messageSubscription = FirebaseMessaging.onMessage.listen((message) {
-      print("message");
-      add(NotificationsOnMessageEvent(message: message));
-    });
-```
-which shows us a snackbar through the `BlocListener<NotificationsBloc, NotificationState>`:
-```dart
- MaterialApp.router(
-              ...
-              builder: (context, child) {
-                return BlocListener<NotificationsBloc, NotificationsState>(
-                  listener: (context, state) async {
-                    if (state is NotificationsReceivedState) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                state.message.notification?.title ?? "<title>",
-                              ),
-                              Text(
-                                state.message.notification?.body ?? "<body>",
-                              ),
-                              Text("Type: ${state.notificationType.name}"),
-                ...
-            );
-```

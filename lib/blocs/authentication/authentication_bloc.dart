@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../model/user.dart';
@@ -27,15 +28,24 @@ class AuthenticationBloc
     on<AuthenticationNewUserRequestEvent>((event, emit) {
       _handleNewUserRequest(event, emit);
     });
+    on<AuthenticationFirebaseInstallationIdReceived>((event, emit) {
+      firebaseInstallationID = event.fid;
+    });
   }
   final AuthenticationRepository authenticationRepository;
   User? user;
+  String? firebaseInstallationID;
 
   void init() async {}
 
   Future<void> _handleSignOut(event, emit) async {
     emit(AuthenticationWaiting());
     user = null;
+    FirebaseFunctions.instance.httpsCallable('updateUserFid').call({
+      'uid': user?.uid,
+      'fid': firebaseInstallationID,
+      'action': 'delete',
+    });
     await authenticationRepository.signOut();
     emit(AuthenticationInitial());
   }
@@ -51,6 +61,12 @@ class AuthenticationBloc
         email: event.email,
         password: event.password,
       );
+      print("Calling update fid: $firebaseInstallationID");
+      FirebaseFunctions.instance.httpsCallable('updateUserFid').call({
+        'uid': user?.uid,
+        'fid': firebaseInstallationID,
+        'action': 'add',
+      });
 
       emit(AuthenticationAuthenticated());
       return;
@@ -67,7 +83,12 @@ class AuthenticationBloc
         email: event.email,
         password: event.password,
       );
-
+      print("Calling update fid: $firebaseInstallationID");
+      FirebaseFunctions.instance.httpsCallable('updateUserFid').call({
+        'uid': user?.uid,
+        'fid': firebaseInstallationID,
+        'action': 'add',
+      });
       emit(AuthenticationAuthenticated());
       return;
     } catch (e) {

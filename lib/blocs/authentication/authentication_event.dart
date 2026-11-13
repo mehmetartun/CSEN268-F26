@@ -22,3 +22,9 @@ class AuthenticationErrorEvent extends AuthenticationEvent {
 class AuthenticationSignOutEvent extends AuthenticationEvent {}
 
 class AuthenticationNewUserRequestEvent extends AuthenticationEvent {}
+
+class AuthenticationFirebaseInstallationIdReceived extends AuthenticationEvent {
+  final String fid;
+
+  AuthenticationFirebaseInstallationIdReceived({required this.fid});
+}

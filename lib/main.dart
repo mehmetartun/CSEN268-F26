@@ -51,7 +51,11 @@ class MyApp extends StatelessWidget {
         providers: [
           BlocProvider(create: (context) => authenticationBloc),
           BlocProvider(create: (context) => themeCubit),
-          BlocProvider(create: (context) => NotificationsBloc()..init()),
+          BlocProvider(
+            create: (context) =>
+                NotificationsBloc(authenticationBloc: authenticationBloc)
+                  ..init(),
+          ),
         ],
         child: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, state) {
