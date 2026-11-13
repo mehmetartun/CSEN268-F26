@@ -24,6 +24,22 @@ const sharp = require("sharp");
 const fs = require("fs");
 const os = require("os");
 
+const { defineSecret } = require('firebase-functions/params');
+const { onInit } = require('firebase-functions/v2/core');
+const { get } = require("http");
+
+const {
+    GoogleGenerativeAI,
+    HarmCategory,
+    HarmBlockThreshold,
+} = require('@google/generative-ai');
+const apiKey = defineSecret('GEMINI_API_KEY');
+
+let genAI;
+onInit(() => {
+    genAI = new GoogleGenerativeAI(apiKey.value());
+})
+
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
 // traffic spikes by instead downgrading performance. This limit is a
@@ -206,3 +222,50 @@ exports.sendMessageTest = onRequest(async (request, response) => {
     await getMessaging().sendEach(messages);
     response.send('Success');
 })
+
+exports.getRecipe = onCall({
+    secrets: ['GEMINI_API_KEY'],
+    timeoutSeconds: 540,
+}, async (request) => {
+    const schema = request.data.schema;
+    const languageModel = request.data.languageModel;
+    try {
+        const model = genAI.getGenerativeModel({
+            model: languageModel,
+            generationConfig: {
+                responseMimeType: 'application/json',
+                responseSchema: schema,
+            },
+        });
+
+        const safetySettings = [
+            {
+                category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+            {
+                category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+        ];
+        const prompt = request.data.prompt;
+        const result = await model.generateContent({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            safetySettings,
+        });
+        const response = result.response;
+        if (!response || !response.candidates || !response.candidates[0].content) {
+            throw new Error('Invalid response from Gemini API.');
+        }
+        const jsonString = response.candidates[0].content.parts[0].text;
+        const recipeJson = JSON.parse(jsonString);
+        return recipeJson;
+    } catch (error) {
+        console.error('Error calling Gemini API:', error);
+        if (error.response) {
+            console.error('API Response Data:', error.response.data);
+        }
+        res.status(500).send(`Error processing request: ${error.message}.`);
+        return { 'error': error.message };
+    }
+});
