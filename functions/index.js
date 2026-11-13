@@ -129,7 +129,9 @@ exports.updateUser = beforeUserSignedIn(async (event) => {
 });
 
 exports.updateUserFid = onCall(async (request) => {
+    logger.info(request.data);
     if (!request.data.uid || !request.data.fid) {
+        logger.info({ 'message': 'Invalid request' });
         return { 'message': 'Invalid request' };
     }
     const uid = request.data.uid;
@@ -149,6 +151,7 @@ exports.updateUserFid = onCall(async (request) => {
             fids.push(fid);
         }
     }
+    logger.info({fids: fids, userPath: userRef.path });
     await userRef.update({
         fids: fids,
     });
@@ -173,29 +176,6 @@ exports.sendMessageTest = onRequest(async (request, response) => {
     }
     var messages = [];
     fids.forEach(fid => {
-        console.log({
-            fid: fid,
-
-            notification: {
-                title: 'Test Notification via FID',
-                body: 'Sent from Node.js using Firebase Installation ID!',
-            },
-
-            data: {
-                click_action: 'FLUTTER_NOTIFICATION_CLICK',
-                screen: '/profile',
-                timestamp: new Date().toISOString(),
-            },
-
-            webpush: {
-                notification: {
-                    icon: '/icons/Icon-192.png',
-                },
-                fcmOptions: {
-                    link: 'http://localhost:58503/',
-                },
-            },
-        });
         messages.push(
           {
             fid: fid,
