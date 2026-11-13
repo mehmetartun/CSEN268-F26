@@ -40,12 +40,13 @@ class AuthenticationBloc
 
   Future<void> _handleSignOut(event, emit) async {
     emit(AuthenticationWaiting());
-    user = null;
+
     FirebaseFunctions.instance.httpsCallable('updateUserFid').call({
       'uid': user?.uid,
       'fid': firebaseInstallationID,
       'action': 'delete',
     });
+    user = null;
     await authenticationRepository.signOut();
     emit(AuthenticationInitial());
   }
