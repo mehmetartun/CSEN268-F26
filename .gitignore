@@ -53,3 +53,5 @@ app.*.map.json
 node_modules/
 .agents/
 google_app_engine_service_account.json
+
+.secrets.local
