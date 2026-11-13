@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'blocs/authentication/authentication_bloc.dart';
 import 'firebase_options.dart';
-import 'navigation/router.dart';
 import 'pages/generic_page.dart';
 import 'repositories/authentication/authentication_repository.dart';
 import 'theme/theme.dart';

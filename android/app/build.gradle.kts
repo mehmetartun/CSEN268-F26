@@ -13,6 +13,7 @@ dependencies {
 
     // 2. Your other existing dependencies (if any)
     // implementation("com.android.support:multidex:2.0.1")
+    // implementation("com.google.android.recaptcha:recaptcha:18.6.1")
 }
 
 android {

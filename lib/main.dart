@@ -1,4 +1,3 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:material_ui/material_ui.dart';
@@ -52,7 +51,11 @@ class MyApp extends StatelessWidget {
         providers: [
           BlocProvider(create: (context) => authenticationBloc),
           BlocProvider(create: (context) => themeCubit),
-          BlocProvider(create: (context) => NotificationsBloc()..init()),
+          BlocProvider(
+            create: (context) =>
+                NotificationsBloc(authenticationBloc: authenticationBloc)
+                  ..init(),
+          ),
         ],
         child: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, state) {

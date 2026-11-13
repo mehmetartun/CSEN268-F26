@@ -100,8 +100,8 @@ class _MapPageState extends State<MapPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   FilledButton(
-                    child: Text("Check if Location Enabled"),
                     onPressed: isLocationTurnedOn,
+                    child: Text("Check if Location Enabled"),
                   ),
                   Text(
                     "Location Turned on? ${locationServiceEnabled == null ? 'Unknown' : locationServiceEnabled!}",
@@ -113,19 +113,19 @@ class _MapPageState extends State<MapPage> {
                     ),
                   SizedBox(height: 20),
                   FilledButton(
-                    child: Text("Check Permission"),
                     onPressed: checkPermission,
+                    child: Text("Check Permission"),
                   ),
                   Text(
                     "Permission? ${permission == null ? 'Unknown' : permission!.name}",
                   ),
                   SizedBox(height: 20),
                   FilledButton(
-                    child: Text("Request Permission"),
                     onPressed: requestPermission,
+                    child: Text("Request Permission"),
                   ),
                   SizedBox(height: 20),
-                  FilledButton(child: Text("Show map"), onPressed: showMap),
+                  FilledButton(onPressed: showMap, child: Text("Show map")),
                 ],
               ),
       ),
