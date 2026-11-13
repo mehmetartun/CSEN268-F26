@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NewUserView extends StatefulWidget {
   const NewUserView({super.key, required this.newUserWithEmail});

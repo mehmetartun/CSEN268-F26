@@ -12,6 +12,7 @@ const { onCall, onRequest } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app")
 const { getFirestore } = require("firebase-admin/firestore")
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { beforeUserCreated, beforeUserSignedIn } = require("firebase-functions/v2/identity");
 
 const logger = require("firebase-functions/logger");
 
@@ -102,3 +103,27 @@ exports.onImageUploaded = onObjectFinalized(async (event) => {
         }
     }
 });
+
+exports.saveUser = beforeUserCreated(async (event) => {
+    const user = event.data;
+    const db = getFirestore();
+    const userRef = db.collection('users').doc(user.uid);
+    await userRef.set({
+        email: user.email ?? null,
+        displayName: user.displayName ?? null,
+        photoUrl: user.photoURL ?? null,
+        createdAt: Timestamp.now(),
+        uid: user.uid,
+        emailVerified: user.emailVerified,
+    }, { merge: true });
+});
+
+exports.updateUser = beforeUserSignedIn(async (event) => {
+    const user = event.data;
+    const db = getFirestore();
+    const userRef = db.collection('users').doc(user.uid);
+    await userRef.update({
+        emailVerified: user.emailVerified,
+    });
+});
+

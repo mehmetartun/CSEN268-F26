@@ -92,29 +92,28 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
               Text("Add a User to get ref", style: tt.labelMedium),
               Text("UserId: ${_docRef?.id} \nPath: ${_docRef?.path}"),
               FilledButton(
-                child: Text("Add User"),
                 onPressed: _docRef == null
                     ? () {
                         addUser();
                       }
                     : null,
+                child: Text("Add User"),
               ),
               Divider(),
               Text("Image Path", style: tt.labelMedium),
               Text("$_imagePath", maxLines: 2),
               FilledButton(
-                child: Text("Get Image"),
                 onPressed: _imagePath == null
                     ? () {
                         pickImage();
                       }
                     : null,
+                child: Text("Get Image"),
               ),
               Divider(),
               Text("Storage Path", style: tt.labelMedium),
               Text("$_storagePath", maxLines: 2),
               FilledButton(
-                child: Text("Upload"),
                 onPressed: _uploadInProgress
                     ? null
                     : _downloadUrl == null
@@ -122,6 +121,7 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
                         uploadImage();
                       }
                     : null,
+                child: Text("Upload"),
               ),
               Text("Progress Indicator", style: tt.labelMedium),
               Container(
