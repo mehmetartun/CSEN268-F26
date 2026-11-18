@@ -52,6 +52,15 @@ class MainDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            title: const Text('Generative AI Image Generation'),
+            onTap: () {
+              context.pop();
+              context.goNamed(
+                MyNavigatorRoute.generativeAIImageGeneration.name,
+              );
+            },
+          ),
+          ListTile(
             title: const Text('Image Upload'),
             onTap: () {
               context.pop();

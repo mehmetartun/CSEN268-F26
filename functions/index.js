@@ -18,7 +18,7 @@ const { googleAI } = require('@genkit-ai/google-genai');
 
 const logger = require("firebase-functions/logger");
 
-const { getStorage } = require("firebase-admin/storage");
+const { getStorage, getDownloadURL } = require("firebase-admin/storage");
 const { onObjectFinalized } = require("firebase-functions/storage");
 const path = require("path");
 const sharp = require("sharp");
@@ -307,3 +307,109 @@ exports.answerQuestion = onCallGenkit({
     secrets: ['GEMINI_API_KEY'],
     timeoutSeconds: 540,
 }, answerQuestionFlow);
+
+
+function getAspectRatio(width, height) {
+    if (!width || !height) return '1:1';
+    const ratio = width / height;
+    const supported = [
+        { label: '1:1', value: 1 },
+        { label: '4:3', value: 4 / 3 },
+        { label: '3:4', value: 3 / 4 },
+        { label: '16:9', value: 16 / 9 },
+        { label: '9:16', value: 9 / 16 },
+    ];
+    return supported.reduce((prev, curr) =>
+        Math.abs(curr.value - ratio) < Math.abs(prev.value - ratio) ? curr : prev
+    ).label;
+}
+
+const imageGenerator = async (schema) => {
+    const { description, image_style, width, height } = schema;
+    const stylePrompt = image_style ? `Style: ${image_style}. ` : "";
+    const prompt = `Create an image based on the following description: ${description}.\n${stylePrompt}`;
+    try {
+        const result = await ai.generate({
+            prompt,
+            model: 'googleai/gemini-3.1-flash-image',
+            config: {
+                responseModalities: ['TEXT', 'IMAGE'],
+                imageConfig: {
+                    aspectRatio: getAspectRatio(width, height),
+        },
+    },
+        });
+        console.log(result);
+        const media = result.media;
+        const dataUrl = media?.url || '';
+        let initialBase64 = dataUrl.startsWith('data:') ? dataUrl.split(',')[1] : dataUrl;
+
+        // 1. Convert to Buffer
+        let imageBuffer;
+        if (dataUrl.startsWith('data:')) {
+            imageBuffer = Buffer.from(initialBase64, 'base64');
+        } else if (dataUrl.startsWith('http://') || dataUrl.startsWith('https://')) {
+            const response = await fetch(dataUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            imageBuffer = Buffer.from(arrayBuffer);
+        } else {
+            imageBuffer = Buffer.from(initialBase64, 'base64');
+        }
+
+        // 2. Process image with Sharp (Resize if specified, always convert to JPEG)
+        let sharpPipeline = sharp(imageBuffer);
+        if (width && height) {
+            sharpPipeline = sharpPipeline.resize({
+                width: width,
+                height: height,
+                fit: 'cover', // crop and resize to fill the exact dimensions nicely
+            });
+        }
+        const jpegBuffer = await sharpPipeline.jpeg().toBuffer();
+        const imageBase64 = jpegBuffer.toString('base64');
+
+        // 3. Save to Firebase Storage
+        const bucket = getStorage().bucket();
+        const filename = `generated_images/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.jpg`;
+        const file = bucket.file(filename);
+
+        await file.save(jpegBuffer, {
+            contentType: 'image/jpeg',
+            metadata: {
+                cacheControl: 'public, max-age=31536000',
+            }
+        });
+
+        // 4. Get Storage path and Download URL
+        const storagePath = file.name;
+        const downloadUrl = await getDownloadURL(file);
+
+        return { imageBase64, storagePath, downloadUrl };
+    } catch (error) {
+        console.error('Error generating image:', error);
+        throw new Error('Image generation failed: ' + error.message);
+    }
+};
+
+const generateImageFlow = ai.defineFlow({
+    name: "generateImage",
+    inputSchema: z.object({
+        description: z.string(),
+        image_style: z.string().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+    }),
+    outputSchema: z.object({
+        imageBase64: z.string(),
+        storagePath: z.string().optional(),
+        downloadUrl: z.string().optional(),
+    }),
+}, async (input) => {
+    const result = await imageGenerator(input);
+    return result;
+});
+
+exports.generateImage = onCallGenkit({
+    secrets: ['GEMINI_API_KEY'],
+    timeoutSeconds: 540,
+}, generateImageFlow);
