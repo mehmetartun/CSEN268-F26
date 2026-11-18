@@ -8,6 +8,7 @@ import '../pages/contacts/contacts_page.dart';
 import '../pages/database/database_page.dart';
 import '../pages/functions_demo_page.dart';
 import '../pages/generative_ai_page.dart';
+import '../pages/generative_ai_streaming_page.dart';
 import '../pages/generic_page.dart';
 import '../pages/image_page.dart';
 import '../pages/image_upload_page.dart';
@@ -34,6 +35,11 @@ final GoRouter router = GoRouter(
           path: MyNavigatorRoute.generativeAI.path,
           name: MyNavigatorRoute.generativeAI.name,
           builder: (context, state) => GenerativeAiPage(),
+        ),
+        GoRoute(
+          path: MyNavigatorRoute.generativeAIStreaming.path,
+          name: MyNavigatorRoute.generativeAIStreaming.name,
+          builder: (context, state) => GenerativeAiStreamingPage(),
         ),
         GoRoute(
           path: MyNavigatorRoute.imageUpload.path,
