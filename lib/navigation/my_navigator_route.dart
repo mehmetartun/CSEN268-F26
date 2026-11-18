@@ -14,6 +14,7 @@ enum MyNavigatorRoute {
   shimmer("shimmer", "shimmer"),
   webView("webView", "webView"),
   generativeAI("generativeAI", "generativeAI"),
+  generativeAIStreaming("generativeAIStreaming", "generativeAIStreaming"),
   functionsDemo("functionsDemo", "functionsDemo"),
   imageUpload("imageUpload", "imageUpload"),
   messaging("messaging", "messaging");

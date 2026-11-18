@@ -8,12 +8,13 @@
  */
 
 const { setGlobalOptions } = require("firebase-functions");
-const { onCall, onRequest } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app")
 const { getFirestore, Timestamp } = require("firebase-admin/firestore")
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { beforeUserCreated, beforeUserSignedIn } = require("firebase-functions/v2/identity");
 const { getMessaging } = require("firebase-admin/messaging");
+const { googleAI } = require('@genkit-ai/google-genai');
 
 const logger = require("firebase-functions/logger");
 
@@ -27,6 +28,9 @@ const os = require("os");
 const { defineSecret } = require('firebase-functions/params');
 const { onInit } = require('firebase-functions/v2/core');
 const { get } = require("http");
+const { enableFirebaseTelemetry } = require('@genkit-ai/firebase');
+const { onCallGenkit } = require("firebase-functions/https");
+const { genkit, z } = require("genkit");
 
 const {
     GoogleGenerativeAI,
@@ -53,6 +57,14 @@ onInit(() => {
 setGlobalOptions({ maxInstances: 10 });
 initializeApp();
 
+
+
+const ai = genkit({
+    plugins: [googleAI()],
+    model: 'googleai/gemini-2.5-flash',
+});
+
+enableFirebaseTelemetry();
 
 exports.helloWorld = onRequest((request, response) => {
     logger.info("Hello logs!", { structuredData: true });
@@ -265,7 +277,33 @@ exports.getRecipe = onCall({
         if (error.response) {
             console.error('API Response Data:', error.response.data);
         }
-        res.status(500).send(`Error processing request: ${error.message}.`);
         return { 'error': error.message };
     }
 });
+
+const answerQuestionFlow = ai.defineFlow({
+    name: "answerQuestion",
+    inputSchema: z.object({
+        question: z.string(),
+        system: z.string().optional(),
+    }),
+    outputSchema: z.string(),
+    streamSchema: z.string(),
+}, async (input, { sendChunk }) => {
+    const { stream, response } =  ai.generateStream({
+        system: input.system,
+        prompt: input.question,
+    });
+    for await (const chunk of stream) {
+        if (chunk.text) {
+            sendChunk(chunk.text);
+        }
+    }
+    const finalResponse = await response;
+    return finalResponse.text;
+});
+
+exports.answerQuestion = onCallGenkit({
+    secrets: ['GEMINI_API_KEY'],
+    timeoutSeconds: 540,
+}, answerQuestionFlow);

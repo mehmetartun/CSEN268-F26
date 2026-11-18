@@ -13,7 +13,9 @@
   },
   "main": "index.js",
   "dependencies": {
-    "@google-cloud/firestore": "^9.4.1",
+    "@genkit-ai/firebase": "^1.44.0",
+    "@genkit-ai/google-genai": "^1.44.0",
+    "@google-cloud/firestore": "^7.11.6",
     "@google-cloud/storage": "^9.0.0",
     "@google/generative-ai": "^0.24.1",
     "firebase-admin": "^14.5.1",
