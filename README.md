@@ -1,147 +1,97 @@
+# Lecture 18 - 5 Testing Scrolling
+In this case we shall build a user list and ensure that we have a list that we can scroll and tap.
 
-## Lecture 18 - 4  Fixing an Error in a Complex Widget Test
-In the previous step we saw that the following test failed:
+To do this we start by creating a page with a `ListView` and create 10 mock users. In our [widget_test.dart](/test/widget_test.dart) file we first create a `ListView`:
 ```dart
-    await tester.pumpWidget(createWidget(
-      UserListTile(
+  Widget createUserList() {
+    return ListView(
+        children: List.generate(20, (index) {
+      return UserListTile(
           user: User(
-        firstName: "John",
-        lastName: "",
-        email: "john@doe.com",
-        imageUrl: "https://placehold.co/500x500",
-        uid: "1234567890",
-      )),
-    ));
-    expect(find.text('John'), findsOneWidget);
-    expect(find.text('J'), findsOneWidget);
-    expect(find.text('john@doe.com'), findsOneWidget);
-```
-because the **last name** was empty string.
-
-To fix this we implement the following in the `UserAvatar` in [user_avatar.dart](/lib/widgets/user_avatar.dart):
-```dart
-  Widget build(BuildContext context) {
-    String initials = "";
-    if (user.firstName.isNotEmpty) {
-      initials += user.firstName[0].toUpperCase();
-    }
-    if (user.lastName.isNotEmpty) {
-      initials += user.lastName[0].toUpperCase();
-    }
-    if (initials == "") {
-      initials = "-";
-    }
-
-    return CircleAvatar(
-      child: Text(
-        initials,
-      ),
-    );
+              firstName: "First$index",
+              lastName: "Last$index",
+              imageUrl: "https://placehold.co/400x400",
+              email: "first$index@last$index.com",
+              uid: "$index"));
+    }));
   }
 ```
-When we now try running our test we get an error again:
+which then gets injected into `createWidget` as child. The call to the tester is to expect a `ListView`. 
+
+#### Checking ListView and the first item
+```dart
+    expect(find.byType(ListView), findsOne);
+```
+will pass. 
+
+Similary checking if "First0 Last0" exists – corresponding to the first user on the list – will be done:
+```dart
+    expect(find.text("First0 Last0"), findsOne);
+```
+We can see that both these will pass.
+
+#### Checking the Scroll Behaviour
+To check the scroll behaviour we use  `tester.fling()` method. 
+```dart
+    ...
+    await tester.fling(find.byType(ListView), Offset(0, -200), 400);
+    await tester.pumpAndSettle();
+    expect(find.text("First0 Last0"), findsNothing);
+    ...
+```
+This means that we would scroll past the first item in the list and we would not find any text that matches this. Note that the origin on the screen is the upper left hand corner and an offset of (0,-200) means scroll down by 200 pixels. This passes as well.
+
+To see the action on the screen we can use the `integration_test` package in our `pubspec.yaml`
+```yaml
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+```
+
+Then we create a top-level directory `integration_test`
 ```zsh
-This was caught by the test expectation on the following line:
-  file:///Users/mehmetartun/Development/csen268/test/widget_test.dart line 49
-The test description was:
-  UserListTile Widget Test
-════════════════════════════════════════════════════════════════════════════════════════════════════
-00:02 +0 -1: UserListTile Widget Test [E]                                                                                       
-  Test failed. See exception logs above.
-  The test description was: UserListTile Widget Test
-  
+...
+├── integration_test
+...
+```
+and we create a file `app_test.dart`
+```dart
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-To run this test again: /Users/mehmetartun/Utilities/flutter/bin/cache/dart-sdk/bin/dart test /Users/mehmetartun/Development/csen268/test/widget_test.dart -p vm --plain-name 'UserListTile Widget Test'
-00:02 +0 -1: Some tests failed.                                                
-```
-This time it's not matching the expectation `"John"` as the display name. That's because there is a `space` character that gets printed in:
-```dart
-    return ListTile(
-      leading: UserAvatar(user: user),
-      // The style of the text will be taken from the ListTileTheme
-      title: Text('${user.firstName} ${user.lastName}'),
-      subtitle: Text(user.email),
-    );
-```
-We can cover this case by modifying the definition of the `UserListTile` [user_list_tile.dart](/lib/widgets/user_list_tile.dart):
-```dart
-  Widget build(BuildContext context) {
-    String displayName = '${user.firstName} ${user.lastName}';
-    displayName = displayName.trim();
-    if (displayName.isEmpty) {
-      displayName = "-";
-    }
-    return ListTile(
-      leading: UserAvatar(user: user),
-      title: Text(displayName),
-      subtitle: Text(user.email),
+  Widget createWidget(Widget child) {
+    return MaterialApp(home: Scaffold(body: child));
+  }
+
+  Widget createUserList() {
+    return ListView(
+      children: List.generate(20, (index) {
+        return UserListTile(
+          user: User(
+            firstName: "First$index",
+            lastName: "Last$index",
+            imageUrl: "https://placehold.co/400x400",
+            email: "first$index@last$index.com",
+            uid: "$index",
+          ),
+        );
+      }),
     );
   }
+
+  testWidgets('ListView', (tester) async {
+    await tester.pumpWidget(createWidget(createUserList()));
+    await tester.pumpAndSettle();
+    expect(find.byType(ListView), findsOne);
+    expect(find.text("First0 Last0"), findsOne);
+    await tester.fling(find.byType(ListView), Offset(0, -200), 400);
+    await tester.pumpAndSettle();
+    expect(find.text("First0 Last0"), findsNothing);
+  });
+}
 ```
-This means we can now write test cases for the following cases:
 
-
-| firstName | lastName | initials  | displayName |
-| :-:|:-:|:-:|:-:|
-| input | input | expect | expect |
-|  `"John"` | `"Doe"` | `"JD"` | `"John Doe"` |
-|  `"John"` | `""` | `"J"` | `"John"` |
-|  `""` | `"Doe"` | `"D"` | `"Doe"` |
-|  `""` | `""` | `"-"` | `"-"` |
-
-We now have a complete test coverage:
-```dart
-    await tester.pumpWidget(createWidget(
-      UserListTile(
-          user: User(
-        firstName: "John",
-        lastName: "Doe",
-        email: "john@doe.com",
-        imageUrl: "https://placehold.co/500x500",
-        uid: "1234567890",
-      )),
-    ));
-    expect(find.text('John Doe'), findsOneWidget);
-    expect(find.text('JD'), findsOneWidget);
-    expect(find.text('john@doe.com'), findsOneWidget);
-    await tester.pumpWidget(createWidget(
-      UserListTile(
-          user: User(
-        firstName: "John",
-        lastName: "",
-        email: "john@doe.com",
-        imageUrl: "https://placehold.co/500x500",
-        uid: "1234567890",
-      )),
-    ));
-    expect(find.text('John'), findsOneWidget);
-    expect(find.text('J'), findsOneWidget);
-    expect(find.text('john@doe.com'), findsOneWidget);
-    await tester.pumpWidget(createWidget(
-      UserListTile(
-          user: User(
-        firstName: "",
-        lastName: "Doe",
-        email: "john@doe.com",
-        imageUrl: "https://placehold.co/500x500",
-        uid: "1234567890",
-      )),
-    ));
-    expect(find.text('Doe'), findsOneWidget);
-    expect(find.text('D'), findsOneWidget);
-    expect(find.text('john@doe.com'), findsOneWidget);
-    await tester.pumpWidget(createWidget(
-      UserListTile(
-          user: User(
-        firstName: "",
-        lastName: "",
-        email: "john@doe.com",
-        imageUrl: "https://placehold.co/500x500",
-        uid: "1234567890",
-      )),
-    ));
-    expect(find.text('-'), findsExactly(2));
-    expect(find.text('john@doe.com'), findsOneWidget);
-```
-Where we used `findsExactly(2)` which means that both in the avatar and in the 
-displayName we will get a `-` that means we need to get exactly two of these to pass the test.
+Which contains the crucial statement: `  IntegrationTestWidgetsFlutterBinding.ensureInitialized()` which ensures that the flutter test can communicate with the device.
