@@ -1,49 +1,54 @@
-# Lecture 18 - 1 Flutter Testing
-In this lecture we will explore testing of widgets and the app in general
+# Lecture 18 - 2  Flutter Testing
 
-# Packages
-Add the following:
-```zsh
-flutter pub add dev:test 'dev:flutter_driver:{"sdk":"flutter"}' 'dev:integration_test:{"sdk":"flutter"}'
-```
-with `dev_dependency` meaning it's a development dependency included in **development** mode. They are not included in the **release** mode,.
 
-# Basic Test of the App
-A basic test is shown in the [widget_test.dart](/test/widget_test.dart). 
+# Step 02 - Testing a Cubit
+Now we will create a cubit and test the cubit.
 ```dart
-import 'package:csen268/main.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+class CounterCubit extends Cubit<CounterState> {
+  CounterCubit() : super(CounterInitial());
+  int counter = 0;
 
-void main() {
-  testWidgets('Generic Page Test', (WidgetTester tester) async {
-    await tester.pumpWidget(MySimpleApp());
-    expect(find.text('Generic Page Test'), findsOneWidget);
-    expect(find.textContaining('Generic'), findsOneWidget);
-  });
-}
-```
-Note that `MySimpleApp()` is just a widget that contains a `MaterialApp` in it's most basic form.
-```dart
-class MySimpleApp extends StatelessWidget {
-  const MySimpleApp({super.key});
+  void add() {
+    counter += 1;
+  }
 
-  @override
-  build(BuildContext context) {
-    return MaterialApp(
-      title: 'Simple App',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const GenericPage(title: 'Generic Page Test'),
-    );
+  void subtract() {
+    counter -= 1;
   }
 }
 ```
+We will test whether the `add()` and `subtract()` methods of the counter are working.
 
-To run this test we can either:
-```zsh
-flutter test test/widget_test.dart
+### Writing the test
+We can create a separate file `test.dart` where we test objects.
+```dart
+void main() {
+  CounterCubit cubit = CounterCubit();
+  test("Counter Cubit Test", () {
+    cubit.add();
+    expect(cubit.counter, 1);
+    cubit.subtract();
+    expect(cubit.counter, 0);
+  });
+}
 ```
-or
+we can run the test and receive the following result:
 ```zsh
-flutter run test/widget_test.dart
+flutter test test/test.dart
+00:01 +1: All tests passed!     
 ```
+
+### Simulate fail
+If we change our test to:
+```dart
+void main() {
+  CounterCubit cubit = CounterCubit();
+  test("Counter Cubit Test", () {
+    cubit.add();
+    expect(cubit.counter, 1);
+    cubit.subtract();
+    expect(cubit.counter, 1);
+  });
+}
+```
+There the second expect would result in error, we get the following result:
