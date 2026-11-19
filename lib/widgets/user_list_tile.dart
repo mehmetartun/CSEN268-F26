@@ -19,6 +19,10 @@ class UserListTile extends StatelessWidget {
       leading: UserAvatar(user: user),
       title: Text(displayName),
       subtitle: Text(user.email),
+      onTap: () {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("$displayName added.")));
+      },
     );
   }
 }
