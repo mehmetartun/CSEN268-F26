@@ -8,10 +8,17 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CircleAvatar(
-      child: Text(
-        '${user.firstName[0]}${user.lastName[0]}',
-      ),
-    );
+    String initials = "";
+    if (user.firstName.isNotEmpty) {
+      initials += user.firstName[0].toUpperCase();
+    }
+    if (user.lastName.isNotEmpty) {
+      initials += user.lastName[0].toUpperCase();
+    }
+    if (initials == "") {
+      initials = "-";
+    }
+
+    return CircleAvatar(child: Text(initials));
   }
 }
