@@ -1,5 +1,5 @@
 
-## Lecture 17 - 4  Fixing an Error in a Complex Widget Test
+## Lecture 18 - 4  Fixing an Error in a Complex Widget Test
 In the previous step we saw that the following test failed:
 ```dart
     await tester.pumpWidget(createWidget(
