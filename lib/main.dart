@@ -7,6 +7,7 @@ import 'blocs/authentication/authentication_bloc.dart';
 import 'blocs/notifications/notifications_bloc.dart';
 import 'firebase_options.dart';
 import 'navigation/router.dart';
+import 'pages/firestore_test_page.dart';
 import 'pages/generic_page.dart';
 import 'repositories/authentication/authentication_repository.dart';
 import 'theme/theme.dart';
@@ -37,7 +38,7 @@ class MySimpleApp extends StatelessWidget {
     return MaterialApp(
       title: 'Simple App',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const GenericPage(title: 'Generic Page Test'),
+      home: FirestoreTestPage(),
     );
   }
 }
